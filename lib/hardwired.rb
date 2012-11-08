@@ -5,7 +5,7 @@ require 'sass'
 require 'time'
 
 
-require 'formats'
-require 'pages'
-require 'helpers'
-require 'aliases'
+require 'hardwired/formats'
+require 'hardwired/pages'
+require 'hardwired/helpers'
+require 'hardwired/aliases'
