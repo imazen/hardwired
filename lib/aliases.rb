@@ -32,7 +32,7 @@ module Hardwired
       
       def self.build_alias_table
         table = {}
-        Hw::ContentFile.find_all().each do |p| 
+        Hardwired::Page.find_all().each do |p| 
           dest = p.abspath
           if p.metadata("Redirect To")
             dest = p.metadata("Redirect To")
@@ -52,8 +52,8 @@ module Hardwired
   end 
 end
 
-module Hw
-  class ContentFile
+module Hardwired
+  class Page
   
     def aliases
       if metadata('aliases')

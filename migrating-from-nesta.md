@@ -20,3 +20,5 @@
 				%a{:href => "/licenses"} Licenses
 
 3. You will need the hardwired-nesta-compat gem. 
+3. You will need to merge the contents of /public, /content/pages, /content, and /views into /content. 
+

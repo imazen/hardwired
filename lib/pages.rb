@@ -1,5 +1,5 @@
-module Hw
-  class DirectFile
+module Hardwired
+  class TemplateFile
     @@cache = {}
     @@loaded = false
 
@@ -12,7 +12,7 @@ module Hw
     def self.load_all
       return if @@loaded
       ## All files with Tilt-registered extensions
-      file_pattern = File.join(Hw::Path.content, "**", "*.{#{Tilt.mappings.keys.join(',')}}")
+      file_pattern = File.join(Hardwired::Path.content, "**", "*.{#{Tilt.mappings.keys.join(',')}}")
       Dir.glob(file_pattern).map do |path|
         #skip statics, layouts, and parts
         next if path =~ /\.(static|layout|part)\./i
@@ -24,7 +24,7 @@ module Hw
     def self.load_physical(fname)
       return if !File.file?(fname) #To skip dirs
       #Strip base path, leading slashes, and last extension
-      url = fname[Hw::Path.content.length..-1].sub(/^\/+/,"")
+      url = fname[Hardwired::Path.content.length..-1].sub(/^\/+/,"")
       ext = File.extname(url).downcase[1..-1];
       url = url[0..-(ext.length + 2)] unless ext.nil? or ext.empty?
 
@@ -34,7 +34,7 @@ module Hw
 
 
       #Should we attempt to parse this file as content?
-      is_content =  (cat.nil? and Hw::Path.content_extensions.include?(ext)) or /^\.(content|c)$/i === cat
+      is_content =  (cat.nil? and Hardwired::Path.content_extensions.include?(ext)) or /^\.(content|c)$/i === cat
 
       ## Reduce /index/
       url = url.sub(/(^|\/)index$/im,"")
@@ -44,11 +44,11 @@ module Hw
       begin
         #We must check that this file hasn't already been cached - multiple threads call cache_all simultaneously
         if is_content && (@@cache[url].nil? || File.mtime(fname) != @@cache[url].mtime)
-          @@cache[url] = ContentFile.new(fname, url)
+          @@cache[url] = Page.new(fname, url)
         end
 
         if !is_content and @@cache[url].nil?
-          @@cache[url] = DirectFile.new(fname, url)
+          @@cache[url] = TemplateFile.new(fname, url)
         end
       rescue Errno::ENOENT
         @@cache[url] = nil 
@@ -65,7 +65,7 @@ module Hw
     end
 
     def self.find_by_path(path)
-      DirectFile.load_all
+      TemplateFile.load_all
       @@cache[path.sub(/^\/+/,"")]
     end
 
@@ -117,7 +117,7 @@ module Hw
 
 
 
-  class ContentFile < DirectFile
+  class Page < TemplateFile
 
 
     class CaseInsensitiveHash < Hash
@@ -138,11 +138,11 @@ module Hw
     end
 
     def heading
-      Hw::ContentFormats[@format].heading(markup)
+      Hardwired::ContentFormats[@format].heading(markup)
     end
 
     def body(scope = nil)
-      body_text = Hw::ContentFormats[@format].body(markup)
+      body_text = Hardwired::ContentFormats[@format].body(markup)
       convert_to_html(@format, scope, body_text)
     end
 

@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
   s.authors     = ["Nathanael Jones"]
   s.email       = ["nathanael.jones@gmail.com"]
   s.homepage    = "http://github.com/nathanaeljones/hardwired"
-  s.summary     = %q{Simple magic-free file-based cms}
+  s.summary     = %q{Simple file-based cms with very little magic}
   s.description = <<-EOF
 Hardwired is an embedded content management system for ruby websites.
 It favors direct connections over abstraction and indirection.
@@ -17,15 +17,16 @@ It favors direct connections over abstraction and indirection.
 If you like markdown, Git, and chafe at artificial restrictions, this is 
 likely the CMS for you. 
 
-Based on Sintra/Rack. Designed for easy theme implementation.
+Based on Sintra/Rack.
 EOF
 
-  s.rubyforge_project = "nesta"
+  s.rubyforge_project = "hardwired"
 
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
   s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   s.require_paths = ["lib"]
+
 
   s.add_dependency('tilt')
   s.add_dependency('haml')

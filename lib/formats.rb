@@ -40,7 +40,7 @@ Tilt.register Tilt::PlainHtmlTemplate, 'htmf'
 Tilt.register Tilt::RubyPoweredMarkdown, 'rmd'
 Tilt.register Tilt::MarkdownVars, 'mdv'
 
-module Hw
+module Hardwired
   class Path
     class << self
       attr_accessor :root, :content, :content_extensions
