@@ -1,6 +1,8 @@
 # Hardwired - A simple website framework for busy control freaks who like Git and plaintext.
 
-The best CMS is the one that doesn't need a manual. Hardwired is tiny, readable, and (we hope) obvious. 
+The best CMS is the one that doesn't need a manual. Hardwired is tiny, readable, and (we hope) intuitive. 
+
+Requires ruby 1.9.X
 
 ## File categories
 
@@ -74,3 +76,28 @@ Content files MUST either (a) have a valid metadata header WITH a valid `heading
 ## accessing config.yml data
 
 @config.*
+
+
+# Optional behavior
+
+## Nesta compat
+
+		require 'hardwired/nesta'
+
+		# Within the App
+		register Hardwired::Nesta
+
+## Wordpress compat
+
+
+		require 'hardwired/wordpress'
+		# Within the App
+		register Hardwired::Wordpress
+
+## Alias/redirection support
+
+
+		require 'hardwired/aliases'
+		# Within the App
+		register Hardwired::Aliases
+
