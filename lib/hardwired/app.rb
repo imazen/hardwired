@@ -56,11 +56,17 @@ module Hardwired
 		set :views, Proc.new { Hardwired::Paths.content_path }
 		set :haml, { :format => :html5 }
 
-		#Redirect incoming urls so they don't have a trailing '/'
+		
 		before do
+			#Protect against ../ attacks
+			if request.path =~ /\.\.[\/\\]/
+	      not_found
+	    end
+	    #Redirect incoming urls so they don't have a trailing '/'
 	    if request.path =~ Regexp.new('./$')
 	      redirect to(request.path.sub(Regexp.new('/$'), ''))
 	    end
+	    #Set config alias
 	    @config = settings
 	  end
 
@@ -166,20 +172,10 @@ module Hardwired
 	    end
 
 
-	  get %r{/attachments/([\w/.-]+)} do |file|
-	    file = File.join(Nesta::Config.attachment_path, params[:captures].first)
-	    if file =~ /\.\.\//
-	      not_found
-	    else 
-	      send_file(file, :disposition => nil)
-	    end
-	  end
-
 	  get '/articles.xml' do
 	    content_type :xml, :charset => 'utf-8'
-	    set_from_config(:title, :subtitle, :author)
 	    @articles = Page.find_articles.select { |a| a.date }[0..9]
-	    cache haml(:atom, :format => :xhtml, :layout => false)
+	    haml(:atom, :format => :xhtml, :layout => false)
 	  end
 
 	  get '/sitemap.xml' do
@@ -190,7 +186,7 @@ module Hardwired
 	    end
 
 
-	    cache haml(:sitemap, :format => :xhtml, :layout => false)
+	    haml(:sitemap, :format => :xhtml, :layout => false)
 	  end
 	end
 end

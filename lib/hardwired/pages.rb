@@ -70,6 +70,7 @@ module Hardwired
     end
 
     def self.all_files
+      TemplateFile.load_all
       Enumerator.new  do |yielder| 
         @@cache.each do |k,v|
           yielder.yield v
@@ -78,6 +79,7 @@ module Hardwired
     end
 
     def self.all_pages
+      TemplateFile.load_all
       Enumerator.new  do |yielder| 
         @@cache.each do |k,v|
           yielder.yield v if v.content? and !v.hidden?

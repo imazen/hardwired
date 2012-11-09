@@ -1,6 +1,7 @@
 
 
 module Hardwired
+    
   module Aliases
     extend Sinatra::Extension
 
@@ -10,9 +11,11 @@ module Hardwired
     #end
 
     # Add a before filter to perform any redirects requested by individual pages
-    before do
+
+    after do
+      return if response.status != 404
       this_url = AliasTable.normalize(request.fullpath)
-      table = AliasTable.all()
+      table = AliasTable.all
       if table.include?(this_url)
         redirect table[this_url], 301 # Always do permanent redirects
       end
@@ -32,7 +35,7 @@ module Hardwired
       
       def self.build_alias_table
         table = {}
-        Hardwired::Page.find_all().each do |p| 
+        Hardwired::Page.all_pages.each do |p| 
           dest = p.abspath
           if p.metadata("Redirect To")
             dest = p.metadata("Redirect To")
@@ -56,8 +59,8 @@ module Hardwired
   class Page
   
     def aliases
-      if metadata('aliases')
-        return metadata('aliases').split(/\s+/) # Aliases are separated by whitespaces. Use '+' to represent a space in a URL.
+      if meta.aliases
+        return meta.aliases.split(/\s+/) # Aliases are separated by whitespaces. Use '+' to represent a space in a URL.
       else
         return []
       end
