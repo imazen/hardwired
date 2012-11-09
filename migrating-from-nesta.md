@@ -37,7 +37,7 @@ First parameter is the css class to tag elements with, second paramater the CSS 
 
 In site.rb, at the top of the file, add
 
-		require 'hardwired/nest'
+		require 'hardwired/compat/nesta'
 
 Within the application, call
 	

@@ -1,4 +1,4 @@
-require 'sinatra/extension'
+
 
 module Hardwired
   module Aliases
@@ -18,7 +18,7 @@ module Hardwired
       end
     end
 
-
+    ## Todo - refactor to self.class instance instead of static?
     class AliasTable
       @@all = nil
       

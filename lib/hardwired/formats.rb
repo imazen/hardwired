@@ -41,20 +41,7 @@ Tilt.register Tilt::RubyPoweredMarkdown, 'rmd'
 Tilt.register Tilt::MarkdownVars, 'mdv'
 
 module Hardwired
-  class Path
-    class << self
-      attr_accessor :root, :content, :content_extensions
-      def root_path(basename = nil)
-        join(root, basename)
-      end
-      def content_path(basename = nil)
-        join(content, basename)
-      end
-      def join(dirname, segment)
-        segment.nil? ? dirname : File.join(dirname, segment)
-      end
-    end
-  end
+
 
   #Content file support
   module ContentFormats
@@ -78,6 +65,13 @@ module Hardwired
       end
     end
 
+    #Removes all implementations registered for the given extensions
+    def self.clear(*extensions)
+      extensions.each do |ext|
+        @template_mappings.delete(normalize(ext))
+      end
+    end
+
     # Returns true when a template exists on an exact match of the provided file extension
     def self.registered?(ext)
       ext = normalize(ext)
@@ -96,40 +90,42 @@ module Hardwired
        # We don't provide a method for engine initialization like Tilt does - it doubles code complexity and we don't have a use-case yet.
        # Using static methods may be the wrong approach, but since Tilt is handling all the heavy lifting, I don't see one on the horizon.
        return fmt if fmt
+    end
+   
+   class MetadataParser
+      
+   end
+
+     
+   class Markdown
+     def self.heading (markup) markup =~ /^#\s*(.*?)(\s*#+|$)/
+       Regexp.last_match(1)
      end
      
-     
-     class Markdown
-       def self.heading (markup) markup =~ /^#\s*(.*?)(\s*#+|$)/
+     def self.body (markup) markup.sub(/^#[^#].*$\r?\n(\r?\n)?/, '')  end
+   end
+   
+   class Haml
+       def self.heading (markup) markup =~  /^\s*%h1\s+(.*)/
          Regexp.last_match(1)
        end
-       
-       def self.body (markup) markup.sub(/^#[^#].*$\r?\n(\r?\n)?/, '')  end
-     end
-     
-     class Haml
-         def self.heading (markup) markup =~  /^\s*%h1\s+(.*)/
-           Regexp.last_match(1)
-         end
-         def self.body (markup) markup.sub(/^\s*%h1\s+.*$\r?\n(\r?\n)?/, '') end
-     end
-     
-     class Textile
-         def self.heading (markup) markup =~  /^\s*h1\.\s+(.*)/
-           Regexp.last_match(1)
-         end
+       def self.body (markup) markup.sub(/^\s*%h1\s+.*$\r?\n(\r?\n)?/, '') end
+   end
+   
+   class Textile
+       def self.heading (markup) markup =~  /^\s*h1\.\s+(.*)/
+         Regexp.last_match(1)
+       end
 
-         def self.body (markup) markup.sub(/^\s*h1\.\s+.*$\r?\n(\r?\n)?/, '') end
-    end
-     
-     class Html
-         def self.heading (markup) markup =~ /^\s*<h1[^><]*>(.*?)<\/h1>/
-           Regexp.last_match(1)
-         end
-
-         def self.body (markup) markup.sub(/^\s*<h1[^><]*>.*?<\/h1>\s*/, '') end
-     end
-     
+       def self.body (markup) markup.sub(/^\s*h1\.\s+.*$\r?\n(\r?\n)?/, '') end
   end
+   
+   class Html
+       def self.heading (markup) markup =~ /^\s*<h1[^><]*>(.*?)<\/h1>/
+         Regexp.last_match(1)
+       end
 
+       def self.body (markup) markup.sub(/^\s*<h1[^><]*>.*?<\/h1>\s*/, '') end
+   end
+  end
 end

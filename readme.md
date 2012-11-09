@@ -73,7 +73,7 @@ Content files MUST either (a) have a valid metadata header WITH a valid `heading
 
 
 
-## accessing config.yml data
+## accessing config.yml data from views
 
 @config.*
 
@@ -82,7 +82,7 @@ Content files MUST either (a) have a valid metadata header WITH a valid `heading
 
 ## Nesta compat
 
-		require 'hardwired/nesta'
+		require 'hardwired/compat/nesta'
 
 		# Within the App
 		register Hardwired::Nesta
@@ -90,14 +90,7 @@ Content files MUST either (a) have a valid metadata header WITH a valid `heading
 ## Wordpress compat
 
 
-		require 'hardwired/wordpress'
+		require 'hardwired/compat/wordpress'
 		# Within the App
 		register Hardwired::Wordpress
-
-## Alias/redirection support
-
-
-		require 'hardwired/aliases'
-		# Within the App
-		register Hardwired::Aliases
 

@@ -12,7 +12,7 @@ module Hardwired
     def self.load_all
       return if @@loaded
       ## All files with Tilt-registered extensions
-      file_pattern = File.join(Hardwired::Path.content, "**", "*.{#{Tilt.mappings.keys.join(',')}}")
+      file_pattern = File.join(Hardwired::Paths.content_path, "**", "*.{#{Tilt.mappings.keys.join(',')}}")
       Dir.glob(file_pattern).map do |path|
         #skip statics, layouts, and parts
         next if path =~ /\.(static|layout|part)\./i
@@ -24,7 +24,7 @@ module Hardwired
     def self.load_physical(fname)
       return if !File.file?(fname) #To skip dirs
       #Strip base path, leading slashes, and last extension
-      url = fname[Hardwired::Path.content.length..-1].sub(/^\/+/,"")
+      url = fname[Hardwired::Paths.content_path.length..-1].sub(/^\/+/,"")
       ext = File.extname(url).downcase[1..-1];
       url = url[0..-(ext.length + 2)] unless ext.nil? or ext.empty?
 
@@ -34,7 +34,7 @@ module Hardwired
 
 
       #Should we attempt to parse this file as content?
-      is_content =  (cat.nil? and Hardwired::Path.content_extensions.include?(ext)) or /^\.(content|c)$/i === cat
+      is_content =  (cat.nil? and Hardwired::Rules.content_extensions.include?(ext)) or /^\.(content|c)$/i === cat
 
       ## Reduce /index/
       url = url.sub(/(^|\/)index$/im,"")
@@ -91,7 +91,7 @@ module Hardwired
 
     #Returns true if this file is a content file
     def content?
-      self.instance_of?(ContentFile)
+      false
     end
 
     def parent
@@ -118,7 +118,9 @@ module Hardwired
 
 
   class Page < TemplateFile
-
+    def content?
+      true
+    end
 
     class CaseInsensitiveHash < Hash
       def [](key) super(key.to_s.downcase) end
@@ -217,5 +219,6 @@ module Hardwired
       template.render(scope)
     end
   end
-
+  #Alias so Hardwired::Pages.all can work
+  Pages = Page
 end 
