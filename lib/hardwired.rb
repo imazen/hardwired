@@ -9,7 +9,7 @@ require 'time'
 
 require 'hardwired/paths'
 require 'hardwired/rules'
-require 'hardwired/formats'
+require 'hardwired/parsing'
 require 'hardwired/pages'
 require 'hardwired/helpers'
 require 'hardwired/metadata'
