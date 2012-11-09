@@ -6,6 +6,12 @@ require 'haml'
 require 'sass'
 require 'time'
 
+module Hardwired
+  class CaseInsensitiveHash < Hash
+    def [](key) super(key.to_s.downcase) end
+  end
+end
+
 
 require 'hardwired/paths'
 require 'hardwired/rules'

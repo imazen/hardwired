@@ -92,9 +92,6 @@ module Hardwired
        return fmt if fmt
     end
    
-   class MetadataParser
-      
-   end
 
      
    class Markdown
@@ -126,6 +123,62 @@ module Hardwired
        end
 
        def self.body (markup) markup.sub(/^\s*<h1[^><]*>.*?<\/h1>\s*/, '') end
-   end
+    end
   end
+
+  module MetadataParsing
+
+
+
+    class SimpleMetadataParser
+      def has_metadata?(text)
+        text.split("\n").first =~ /^[\w ]+:/
+      end
+
+      def extract(text)
+        first_paragraph, remaining = text.split(/\r?\n\r?\n/, 2)
+        
+        has_meta = has_metadata?(first_paragraph)
+
+        metadata = has_meta ? parse(first_paragraph) : {}
+        
+        return metadata, has_meta ? remaining : text
+      end
+     
+
+      def parse(metadata)
+        hash = CaseInsensitiveHash.new
+        metadata.split("\n").each do |line|
+          key, value = line.split(/\s*:\s*/, 2)
+          next if value.nil?
+          hash[key.downcase] = value.chomp
+        end
+        hash
+      end
+
+    end
+
+    class YamlMetadataParser < SimpleMetadataParser
+
+      def parse(metadata_segment)
+        yaml = YAML.load(metadata_segment)
+      rescue Psych::SyntaxError
+        raise MetadataParseError
+      else
+        raise MetadataParseError unless yaml
+        metadata = CaseInsensitiveHash.new
+        yaml.each { |key, value| metadata[key.downcase] = value } if yaml
+        metadata 
+      end 
+
+    end 
+
+    @@parser = SimpleMetadataParser
+    def self.parser(val = nil)
+      @@parser = val unless val.nil?
+      @@parser
+    end 
+
+  end 
+
 end

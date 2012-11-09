@@ -132,7 +132,12 @@ module Hardwired
       @metadata = CaseInsensitiveHash.new
       @markup = ''
 
-      parse_file unless File.zero?(filename)
+      if !File.zero?(filename)
+        File.open(@filename) { |f|
+          @raw_contents = f.read
+        }
+        @metadata, @markup = Hardwired::MetadataParsing.parser.new.extract(@raw_contents)
+      end
     end
 
     def markup
@@ -168,24 +173,6 @@ module Hardwired
 
 
   private
-    def seems_metadata?(text)
-      text.split("\n").first =~ /^[\w ]+:/
-    end
-
-    def parse_file
-      @raw_contents = File.open(@filename).read
-    
-      first_paragraph, remaining = @raw_contents.split(/\r?\n\r?\n/, 2)
-      
-      if seems_metadata?(first_paragraph)
-        first_paragraph.split("\n").each do |line|
-          key, value = line.split(/\s*:\s*/, 2)
-          next if value.nil?
-          @metadata[key.downcase] = value.chomp
-        end
-      end
-      @markup = seems_metadata?(first_paragraph) ? remaining : @raw_contents
-    end
 
     def tag_lines_of_haml(text)
       tagged = (text =~ /^\s*%/)
