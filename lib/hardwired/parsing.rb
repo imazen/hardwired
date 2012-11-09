@@ -147,11 +147,11 @@ module Hardwired
      
 
       def parse(metadata)
-        hash = CaseInsensitiveHash.new
+        hash = {}
         metadata.split("\n").each do |line|
           key, value = line.split(/\s*:\s*/, 2)
           next if value.nil?
-          hash[key.downcase] = value.chomp
+          hash[key] = value.chomp
         end
         hash
       end
@@ -166,9 +166,7 @@ module Hardwired
         raise MetadataParseError
       else
         raise MetadataParseError unless yaml
-        metadata = CaseInsensitiveHash.new
-        yaml.each { |key, value| metadata[key.downcase] = value } if yaml
-        metadata 
+        yaml || {}
       end 
 
     end 

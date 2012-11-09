@@ -122,14 +122,12 @@ module Hardwired
       true
     end
 
-    class CaseInsensitiveHash < Hash
-      def [](key) super(key.to_s.downcase) end
-    end
+
 
     def initialize(filename,url)
       super
 
-      @metadata = CaseInsensitiveHash.new
+      @metadata = RecursiveOpenStruct.new
       @markup = ''
 
       if !File.zero?(filename)
@@ -137,6 +135,7 @@ module Hardwired
           @raw_contents = f.read
         }
         @metadata, @markup = Hardwired::MetadataParsing.parser.new.extract(@raw_contents)
+        @metadata = RecursiveOpenStruct.new(@metadata)
       end
     end
 

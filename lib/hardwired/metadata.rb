@@ -1,5 +1,12 @@
+
+
 module Hardwired
 	class Page
+
+
+    def meta
+      @metadata
+    end 
 
 		def metadata(key)
 			@metadata[key.downcase]
@@ -65,8 +72,8 @@ module Hardwired
 
   
     def title
-      if metadata('title')
-        metadata('title')
+      if meta.title
+        meta.title
       elsif parent && (! parent.heading.nil?)
         "#{heading} - #{parent.heading}"
       elsif heading
@@ -77,11 +84,11 @@ module Hardwired
     end
 
     def date(format = nil)
-      @date ||= if metadata("date")
+      @date ||= if meta.date
         if format == :xmlschema
-          Time.parse(metadata("date")).xmlschema
+          Time.parse(meta.data).xmlschema
         else
-          DateTime.parse(metadata("date"))
+          DateTime.parse(meta.date)
         end
       end
     end
