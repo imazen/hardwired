@@ -4,13 +4,14 @@
 
 Hardwired doesn't require you to keep your .scss and .css files in separate directories.
 
-Everything goes in the `/content/` directory, including
+You *may* move everything from `/public/*` into `/content/`; otherwise, set a static rack directive so they continue to be served.
+Move everything from `/content/pages/` down into `/content/`, and delete the empty `pages` folder.
+Move `/views/atom.haml` and `/views/sitemap.haml` into `/content/`.
+Move `/views/not_found.haml` and `/views/error.haml` into `/content/` and rename them to `404.haml` and `500.haml` respectively. Numeric names keep them visually separated from real content in the folder.
+Move all remaining files from `/views/` to `/content/_layout/`.
 
-1. /public/*
-2. /content/pages/*
-3. /views/*
 
-You can leave /content/attachmetns as-is, if you wish.
+You can leave /content/attachments as-is, if you wish.
 
 ## 1. Expand menus
 

@@ -2,14 +2,43 @@
 
 The best CMS is the one that doesn't need a manual. Hardwired is tiny, readable, and (we hope) intuitive. 
 
-Requires ruby 1.9.X
+Dependencies: ruby 1.9+, sinatra 1.3.3+, tilt, sinatra-contrib, haml, sass, nokogiri, RedCloth, rdiscount, erubis
+
+Suggested: rerun, thin
+
+## Special folders
+
+* `/content/` All content, layouts, templates, and static files are located inside the `/content/` folder.
+* `/content/_layout/` All layouts, page templates, and partials go here.
+
+## Special files
+
+* `/config.yml` - Data here can be accessed in any template or layout through `@config.*`.
+* `/Gemfile` - Lists the gems required by the website. Must include `gem 'hardwired'`
+* `/config.ru` - This is the file called by the web server to start the application. It calls `site.rb`, then runs the app with `run new Site`.
+* `/site.rb` - This file is where you define your Site instance. At minimum, it must include:
+
+		Hardwired::Paths.root = ::File.expand_path('.', ::File.dirname(__FILE__))
+		Hardwired::Paths.content_subfolder = 'content' #optional
+		Hardwired::Paths.layout_subfolder = 'content/_layout'
+
+		class Site < Hardwired::Site
+				#Load config.yml from the root
+				config_file 'config.yml'
+		end
+
+## Special metadata keys
+
+* `Aliases:` - Space delimited list of domain-local URLs to redirect to the current page. Use '+' to represent spaces in URLs
+* `Redirect To:` - Turns a page into a placeholder for a remote URL redirect
+* 
+
+
 
 ## File categories
 
-* Part (.part.*) - A partial is a file that cannot be rendered directly; it's only usable from within another file.
 * Content (.content.* or .c.*) - A content file always rendered within a template and layout, unless otherwise specified in metadata. It's also indexed in the Pages collection.
-* Direct (.direct.* or .d.*) - A file that is interpreted without a layout or template, does not have metadata, and is only indexed for URL purposes.
-* Layout (.layout.*) - A layout file that requires content in order to be displayed. 
+* Direct (.direct.* or .d.*) - A template file that is interpreted without a layout, does not have metadata, and is only indexed for URL purposes.
 * Static (.static.*) - A file that is served statically.
 
 Other than static files, all have access to `config.yml` data (via the `settings` hash) and the Pages index (via the `Pages` class).

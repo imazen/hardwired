@@ -1,4 +1,4 @@
-
+# This file implements redirection support
 
 module Hardwired
     
