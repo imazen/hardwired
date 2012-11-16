@@ -4,15 +4,23 @@ module Hardwired
     class << self
       attr_accessor :root, :content_subfolder, :layout_subfolder
 
+      def layout_subfolder 
+        @layout_subfolder || '_layout' 
+      end
+
+      def content_subfolder 
+        @content_subfolder || 'content' 
+      end
+       
 
       def root_path(basename = nil)
         join(root, basename)
       end
       def content_path(basename = nil)
-        join(root_path(content_subfolder || 'content'), basename)
+        join(root_path(content_subfolder), basename)
       end
       def layout_path(basename = nil)
-        join(root_path(layout_subfolder || content_path('_layout')), basename)
+        join(content_path(layout_subfolder), basename)
       end
       def join(dirname, segment)
         segment.nil? ? dirname : File.join(dirname, segment.to_s)

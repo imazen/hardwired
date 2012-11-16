@@ -8,14 +8,7 @@
 
 2. Redirect slash-terminated URLs to non-slash-terminated URLs, or vice versa.
 
-3. 
-5. Direct files are interpreted and served IF
-    a. `<url>(/index)?.(direct|d).*` exists, OR `<url>(/index)?.<ext>` exists and `<ext>` is a template type that defaults to direct interpretation.
-
-6. Content files are interpreted and served IF
-	a. Pages collection has a URL match
 =end
-
 #If certain folders are KNOWN to contain only static files, we can speed those up
 
 #use Rack::Static, :urls => ["/public"]
@@ -49,9 +42,13 @@ module Hardwired
 		helpers Hardwired::Helpers
 
 		helpers do
-      def rules
-      	settings.rules
-      end
+
+	    def find_template(views, name, engine, &block)
+		  	#normal
+		    super(views, name, engine, &block)
+		    #_layout folder
+		    super(Hardwired::Paths.layout_path, name.to_s, engine, &block)
+		  end
 		end
 
 		set :root, Proc.new {Hardwired::Paths.root_path }
@@ -84,7 +81,9 @@ module Hardwired
 			pass if interpreted_ext and !File.file?(static_path)
 			pass if !interpreted_ext and !File.file?(local_path)
 			
-			send_file interpreted_ext ? static_path : local_path
+			real_path = interpreted_ext ? static_path : local_path
+
+			send_file(real_path, request[:download] ? {:disposition => 'attachment'} : {})
 	  end
 
 	  # Special handling for non-static .css and .js requests so they'll match the 'direct evaluation' routes
@@ -95,15 +94,13 @@ module Hardwired
 
 
 
-	  #All interpreted files are in the index
+	  #All interpreted files are in the index, even scss and coffeescript
 	  get '*' do
-	  	@page = Hardwired::Index.find_by_path(request.path_info.sub(/^\//,""))
+	  	@page = Hardwired::Index[request.path_info]
 
 			#debugger
-
-
-	  	pass if @page.hidden? or !@page.is_page?
-	  	@page.render
+	  	pass if !@page.can_render?
+	  	@page.render({},self)
 	  end 
   end
 
@@ -119,12 +116,10 @@ module Hardwired
 
 
 	  not_found do
-	    @config = settings
 	    haml(:'404')
 	  end
 
 	  error do
-	    @config = settings
 	    haml(:'500')
 	  end unless development?
 
@@ -133,13 +128,13 @@ module Hardwired
 
 	  get '/articles.xml' do
 	    content_type :xml, :charset => 'utf-8'
-	    @articles = Page.find_articles.select { |a| a.date }[0..9]
+	    @articles = Index.find_articles.select { |a| a.date }[0..9]
 	    haml(:atom, :format => :xhtml, :layout => false)
 	  end
 
 	  get '/sitemap.xml' do
 	    content_type :xml, :charset => 'utf-8'
-	    @pages = Page.find_all
+	    @pages = Index.find_all
 	    @last = @pages.map { |page| page.last_modified }.inject do |latest, page|
 	      (page > latest) ? page : latest
 	    end

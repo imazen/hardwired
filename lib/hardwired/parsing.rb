@@ -95,31 +95,28 @@ module Hardwired
 
      
    class Markdown
-     def self.heading (markup) markup =~ /^#\s*(.*?)(\s*#+|$)/
-       Regexp.last_match(1)
+     def self.heading (markup) markup =~ /^#\s*(.*?)(\s*#+|$)/ ? $1 : nil
      end
      
      def self.body (markup) markup.sub(/^#[^#].*$\r?\n(\r?\n)?/, '')  end
    end
    
    class Haml
-       def self.heading (markup) markup =~  /^\s*%h1\s+(.*)/
-         Regexp.last_match(1)
+       def self.heading (markup) markup =~  /^\s*%h1\s+(.*)/ ? $1 : nil
        end
        def self.body (markup) markup.sub(/^\s*%h1\s+.*$\r?\n(\r?\n)?/, '') end
    end
    
    class Textile
-       def self.heading (markup) markup =~  /^\s*h1\.\s+(.*)/
-         Regexp.last_match(1)
-       end
+       def self.heading (markup) 
+         markup =~  /^\s*h1\.\s+(.*)/ ? $1 : nil
+      end
 
        def self.body (markup) markup.sub(/^\s*h1\.\s+.*$\r?\n(\r?\n)?/, '') end
   end
    
    class Html
-       def self.heading (markup) markup =~ /^\s*<h1[^><]*>(.*?)<\/h1>/
-         Regexp.last_match(1)
+       def self.heading (markup) markup =~ /^\s*<h1[^><]*>(.*?)<\/h1>/ ? $1 : nil
        end
 
        def self.body (markup) markup.sub(/^\s*<h1[^><]*>.*?<\/h1>\s*/, '') end
@@ -131,18 +128,22 @@ module Hardwired
 
 
     class SimpleMetadataParser
+
       def has_metadata?(text)
-        text.split("\n").first =~ /^[\w ]+:/
+        text =~ /^A[\w ]+:/
       end
 
       def extract(text)
-        first_paragraph, remaining = text.split(/\r?\n\r?\n/, 2)
+
+        ix = text.index(/\r?\n\r?\n/)
+        first_paragraph = ix.nil? ? '' : text[0..ix+2]
+        remaining = ix.nil? text : text[ix+2..-1]
         
         has_meta = has_metadata?(first_paragraph)
 
         metadata = has_meta ? parse(first_paragraph) : {}
         
-        return metadata, has_meta ? remaining : text
+        return metadata, (has_meta ? remaining : text), has_meta
       end
      
 
@@ -155,10 +156,23 @@ module Hardwired
         end
         hash
       end
-
     end
 
     class YamlMetadataParser < SimpleMetadataParser
+
+      def has_metadata?(text)
+        text =~ /^A(---|[\w ]+:)/
+      end
+
+      def extract(text)
+          #Support --- (jeykll style)
+          if text =~ /^(---\s*\n.*?\n?)^(---\s*$\n?)/m
+            return parse($1), $POSTMATCH, true
+          else
+            super
+          end
+      end
+
 
       def parse(metadata_segment)
         yaml = YAML.load(metadata_segment)
@@ -169,9 +183,12 @@ module Hardwired
         yaml || {}
       end 
 
+
+
+
     end 
 
-    @@parser = SimpleMetadataParser
+    @@parser = YamlMetadataParser
     def self.parser(val = nil)
       @@parser = val unless val.nil?
       @@parser

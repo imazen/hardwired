@@ -37,7 +37,6 @@ First parameter is the css class to tag elements with, second paramater the CSS 
 Remember to update all references to the `menu_items`, `display_menu`, or `display_menu_items` helpers or the `Menu` class
 
 
-
 ## 2. Include `hardwired/nesta` compatibility routes and aliases
 
 In site.rb, at the top of the file, add

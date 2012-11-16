@@ -12,6 +12,28 @@ module Nesta
 end
 
 module Hardwired
+	class Page
+
+    def description
+      meta.description
+    end
+
+     def keywords
+      meta.keywords
+    end
+
+    def flagged_as? (flag)
+    	flag? flag
+    end
+
+    def abspath
+      path
+    end
+    
+  end
+end
+
+module Hardwired
   module Nesta
     extend Sinatra::Extension
 

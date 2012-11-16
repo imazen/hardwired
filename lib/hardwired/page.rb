@@ -1,62 +1,26 @@
 
 
 module Hardwired
-	class Page
+  class Page < Template
 
 
-    def meta
-      @metadata
+    def initialize(filename)
+      if filename.instance_of?(Template)
+        copy_vars_from(filename)
+      else
+        debugger
+        super
+      end
+    end
+
+    def can_render?
+      return false if date && page.date >= DateTime.now 
+      super
     end 
 
-		def metadata(key)
-			@metadata[key.downcase]
-		end
-
-    def layout
-      (metadata('layout') || 'layout').to_sym
-    end
-
-    def template
-      (metadata('template') || 'page').to_sym
-    end
-
-
-    def last_modified
-      @last_modified ||= File.stat(@filename).mtime
-    end
-
-    def description
-      metadata('description')
-    end
-
-    def abspath
-    	"/#{path}"
-    end
-    
-    def keywords
-      metadata('keywords')
-    end
-    
-    def metadata(key)
-      @metadata[key]
-    end
-    
-    def draft?
-      flagged_as?('draft')
-    end
-
-    def hidden?
-      flagged_as?('hidden') or (draft? && Nesta::App.production?)
-    end
-
-
-    def flagged_as?(flag)
-      flags = metadata('flags')
-      flags && flags.split(',').map { |name| name.strip }.include?(flag)
-    end
 
     def self.find_all
-      all.select { |p| ! p.hidden? }
+      Index.all_pages.select { |p| ! p.hidden? }
     end
 
     def self.find_articles
@@ -141,22 +105,11 @@ module Hardwired
       end
 
      def tags
-       strings = metadata('tags')
-       strings.nil? ? [] : strings.split(',').map { |string| string.strip }
+      parse_string_list(meta.tags)
      end
 
     
-     def libs
-       strings = metadata('libs')
-       strings.nil? ? [] : strings.split(',').map { |string| string.strip }
-     end
-     
-     def lib(lib)
-        (libs.include?(lib) or libs.include?(lib.to_s))
-     end
 
-
-   
 
   end
-end
+end 

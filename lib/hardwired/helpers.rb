@@ -9,7 +9,7 @@ end
 module Hardwired
 	module Helpers
 
-		def self.menu_tag_current_in_fragment(path_to_find, tag_with_class = :selected, elements_to_tag = 'li', fragment)
+		def self.menu_tag_current_in_fragment(path_to_find, tag_with_class, elements_to_tag, fragment)
   		require 'nokogiri'
 		  dom = Nokogiri::HTML::fragment(fragment)
 		  dom.css(elements_to_tag).each do |i|
@@ -18,21 +18,6 @@ module Hardwired
 		    i['class'] = old_class.nil? ? tag_with_class : "#{old_class} #{tag_with_class}"
 		  end 
 		  dom.to_html
-		end
-
-
-
-		def render_direct (filename, engine, options = {}, locals = {})
-
-			template = Tilt[engine]
-			raise "Template engine not found: #{engine}" if template.nil?
-
-			inst = template.new(@page.filename,1,options)
-			
-			inst.render(scope, locals, &block)
-
-      output.extend(ContentTyped).content_type = content_type if content_type
-      output
 		end
 
 		def split_ext
@@ -45,14 +30,6 @@ module Hardwired
 			end
 			return path, ext
 		end
-
-	  def find_template(views, name, engine, &block)
-	  	#normal
-	    super(views, name, engine, &block)
-	    #_layout folder
-	    super(Hardwired::Paths.layout_path, name.to_s, engine, &block)
-	  end
-
 
 	end
 end
