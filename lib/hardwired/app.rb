@@ -18,12 +18,12 @@
 
 #If certain folders are KNOWN to contain only static files, we can speed those up
 
-#use Rack::Static, :urls => ["/media"], :root "content"
+#use Rack::Static, :urls => ["/public"]
+#use Rack::Static, :urls => ["/attachments"], :root "content"
 
 
 
-
-#While Tilt registration is enough for direct files, content files require a specialized parser
+#Register parsers for file types that support automatic header parsing
 Hardwired::ContentFormats.register Hardwired::ContentFormats::Markdown, :mdown, :md, :markdown
 Hardwired::ContentFormats.register Hardwired::ContentFormats::Haml, :haml
 Hardwired::ContentFormats.register Hardwired::ContentFormats::Textile, :textile
@@ -33,7 +33,7 @@ Hardwired::ContentFormats.register Hardwired::ContentFormats::Html, :htmf
 
 Encoding.default_external = 'utf-8' if RUBY_VERSION =~ /^1.9/
 module Hardwired 
-	class Site < Sinatra::Base
+	class Base < Sinatra::Base
 
 
 		#Make config.yml available as 'settings'
@@ -43,8 +43,10 @@ module Hardwired
 		register Sinatra::ContentFor
 
 		#Enable redirect support
-
 		register Hardwired::Aliases
+
+		#Import helper methods
+		helpers Hardwired::Helpers
 
 		helpers do
       def rules
@@ -58,8 +60,8 @@ module Hardwired
 
 		
 		before do
-			#Protect against ../ attacks
-			if request.path =~ /\.\.[\/\\]/
+			#Protect against ../ attacks and _layout access
+			if request.path =~ /\.\.[\/\\]/ or request.path_info =~ /^\/_layout/mi
 	      not_found
 	    end
 	    #Redirect incoming urls so they don't have a trailing '/'
@@ -95,81 +97,38 @@ module Hardwired
 
 	  #All interpreted files are in the index
 	  get '*' do
-	  	@page = Hardwired::TemplateFile.find_by_path(request.path_info.sub(/^\//,""))
+	  	@page = Hardwired::Index.find_by_path(request.path_info.sub(/^\//,""))
 
 			#debugger
 
 
-	  	pass if @page.nil? or (@page.content? and @page.hidden?)
-
-
-
-	  	@config = settings
-
-	  	if @page.content?
-				haml(@page.template, :layout => @page.layout)
-			else
-				render_direct @page.filename, @page.format
-			end
+	  	pass if @page.hidden? or !@page.is_page?
+	  	@page.render
 	  end 
+  end
 
+  class Bootstrap < Base
 
-		helpers do
-
-			def render_direct (filename, engine, options = {}, locals = {})
-
-				template = Tilt[engine]
-				raise "Template engine not found: #{engine}" if template.nil?
-
-				inst = template.new(@page.filename,1,options)
-				
-				inst.render(scope, locals, &block)
-
-	      output.extend(ContentTyped).content_type = content_type if content_type
-	      output
-			end
-
-			def split_ext
-				#Get last extension
-				ext = File.extname(request.path_info)
-				path = request.path_info
-				if !ext.empty?
-					ext = ext[1..-1] 
-					path = path[0..-(ext.length + 2)]
-				end
-				return path, ext
-			end
-
-		  def find_template(views, name, engine, &block)
-		  	#normal
-		    super(views, name, engine, &block)
-		    #.part
-		    super(views, name.to_s + '.part', engine, &block)
-		    #.layout
-		    super(views, name.to_s + '.layout', engine, &block)
-		  end
-		end
-
-
+    get '/robots.txt' do
+      content_type 'text/plain', :charset => 'utf-8'
+      <<-EOF
+# robots.txt
+# See http://en.wikipedia.org/wiki/Robots_exclusion_standard
+      EOF
+    end
 
 
 	  not_found do
 	    @config = settings
-	    haml(:not_found)
+	    haml(:'404')
 	  end
 
 	  error do
 	    @config = settings
-	    haml(:error)
+	    haml(:'500')
 	  end unless development?
 
-	    get '/robots.txt' do
-	      content_type 'text/plain', :charset => 'utf-8'
-	      <<-EOF
-	# robots.txt
-	# See http://en.wikipedia.org/wiki/Robots_exclusion_standard
-	      EOF
-	    end
+
 
 
 	  get '/articles.xml' do
@@ -184,9 +143,8 @@ module Hardwired
 	    @last = @pages.map { |page| page.last_modified }.inject do |latest, page|
 	      (page > latest) ? page : latest
 	    end
-
-
 	    haml(:sitemap, :format => :xhtml, :layout => false)
 	  end
+
 	end
 end

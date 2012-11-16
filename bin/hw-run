@@ -1,0 +1,2 @@
+#!/bin/bash
+rerun --dir '../.' --pattern "**/*.{rb,js,css,scss,sass,erb,html,haml,ru,haml,md,mdown,markdown}" -- thin start --debug --port=4001

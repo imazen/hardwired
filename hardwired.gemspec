@@ -39,9 +39,6 @@ EOF
   s.add_dependency('sinatra-contrib')
 
   
-  # Useful in development
-  s.add_dependency('shotgun', '>= 0.8')
-
   # Test libraries
   s.add_development_dependency('hpricot', '0.8.4')
   s.add_development_dependency('rack-test', '0.6.1')

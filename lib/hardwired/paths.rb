@@ -2,7 +2,7 @@
 module Hardwired
  class Paths
     class << self
-      attr_accessor :root, :content_subfolder
+      attr_accessor :root, :content_subfolder, :layout_subfolder
 
 
       def root_path(basename = nil)
@@ -10,6 +10,9 @@ module Hardwired
       end
       def content_path(basename = nil)
         join(root_path(content_subfolder || 'content'), basename)
+      end
+      def layout_path(basename = nil)
+        join(root_path(layout_subfolder || content_path('_layout')), basename)
       end
       def join(dirname, segment)
         segment.nil? ? dirname : File.join(dirname, segment.to_s)
