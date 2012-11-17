@@ -35,10 +35,10 @@ module Hardwired
       
       def self.build_alias_table
         table = {}
-        Hardwired::Page.all_pages.each do |p| 
-          dest = p.abspath
-          if p.metadata("Redirect To")
-            dest = p.metadata("Redirect To")
+        Index.files.each do |p| 
+          dest = p.path
+          if p.meta.redirect_to
+            dest = p.meta.redirect_to
             table[AliasTable.normalize(p.abspath)] = dest
           end
           p.aliases.each  do |url| 
@@ -56,7 +56,7 @@ module Hardwired
 end
 
 module Hardwired
-  class Page
+  class Template
   
     def aliases
       if meta.aliases

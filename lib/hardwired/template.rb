@@ -10,7 +10,7 @@ module Hardwired
     end
 
     def in_layout_dir?
-      debugger if path.nil?
+      
       !path.index(Paths.layout_subfolder).nil? && path.index(Paths.layout_subfolder) < 2 
     end
 
@@ -18,7 +18,7 @@ module Hardwired
     #Should return true if the file can be rendered
     def can_render?
       return true if flag?('visible')
-      hidden? and !in_layout_dir?
+      !hidden? and !in_layout_dir?
     end 
 
 
@@ -49,9 +49,13 @@ module Hardwired
       parse_string_list(meta.libs)
      end
      
-     def lib?(lib)
-        libs.include?(lib) or libs.include?(lib.to_s)
+     def lib(name)
+        libs.include?(name) or libs.include?(name.to_s)
      end
+
+     def lib?(name)
+        lib(name)
+      end
 
     def flagged_as?(flag)
       flags.include?(flag)
@@ -62,10 +66,16 @@ module Hardwired
     end
 
     def layout
-      meta.layout || Paths.layout_subfolder + '/page'
+      debugger if path == '/_layout/layout'
+      
+      #All layouts in _layout must be explicitly specified
+      !meta.layout.nil? ? meta.layout : (in_layout_dir? ? nil : Paths.layout_subfolder + '/page')
+
+
     end
 
     def layout_paths
+      return if !layout
       yield layout #as-is (root)
       return if layout[0] == '/'  #Absolute paths can't be combined
       yield filename[Paths.content_path.length..-1].sub(/\/[^\/]$/m,'/') + layout #in current folder
@@ -84,14 +94,14 @@ module Hardwired
 
       @raw_contents = raw_contents || ''
       @line = line.to_i
-      if raw_contents.nil? and !File.zero?(filename)
+      if raw_contents.nil? && !File.zero?(filename)
         File.open(@filename) { |f|
           @raw_contents = f.read
         }
       end
 
 
-      @meta, @markup = MetadataParsing.parser.new.extract(@raw_contents)
+      @meta, @markup, has_meta = MetadataParsing.extract(@raw_contents)
       debugger if !@meta.is_a?(Hash)
       @meta = RecursiveOpenStruct.new(@meta)
 
@@ -124,42 +134,48 @@ module Hardwired
       @renderer_class
     end
 
-    def self.list_engine_names(engine)
-      yield engine
-      default = Tilt[engine]
-      Tilt.mappings.each_pair do |k,v| 
-        yield k if v.include?(default) 
-      end
+
+    def body(scope)
+      render(scope.settings, {:skip_layout => true}, scope )
     end
 
 
+    def render(global_options = {}, options = {},scope = nil, locals=nil,&block)
+      debugger if !options.is_a?(Hash) 
 
-    def render(options = {},scope = nil, locals=nil,&block)
-
-      #Merge engine-specific options from settings
-      list_engine_names(engine_name).each do |engine|
-        engine_options  = settings.respond_to?(engine) ? settings.send(engine) : {}
+      #Merge engine-specific options from global_options
+      Tilt.alternate_engine_names(engine_name).each do |engine|
+        engine_options  = global_options.respond_to?(engine) ? global_options.send(engine) : {}
+        debugger if !engine_options.is_a?(Hash) or !options.is_a?(Hash)
         options         = engine_options.merge(options)
       end
 
       #Establish defaults for scope, locals, content type, and default encoding
       scope ||= options.delete(:scope) || Object.new
-      locals ||= options.delete(:locals) || {}
+      locals ||= {:page => self, :config => global_options, :index => Hardwired::Index}
+      locals =  options[:locals].merge(locals) if options[:locals]
       
       content_type    = meta.content_type || options.delete(:content_type)  || options.delete(:default_content_type)
       locals[:template] = self
-      options[:default_encoding] ||= settings.default_encoding
+      options[:default_encoding] ||= global_options.default_encoding if global_options.respond_to?(:default_encoding)
 
 
       #Render current template
       i = renderer_class.new(filename,line,options){markup_body}
       output = i.render(scope, locals, &block)
 
+      options[:inner_templates] ||= []
+
+      raise "Infinite loop in template chain: #{options[:inner_templates].map { |p| p.path}.join(' -> ')} -> #{path}!" if options[:inner_templates].include?(self) 
+
+      options[:inner_templates] << self
+
       #Render parents recursively
-      output = layout_template.render(options,scope,locals) {output} unless layout_template.nil?
+      output = layout_template.render(global_options, options,scope,locals) {output} unless layout_template.nil? or options[:skip_layout]
 
       #First template rendered controls the content-type
       output.extend(ContentTyped).content_type = content_type if content_type
+      
       output
     end
 
@@ -182,10 +198,10 @@ module Hardwired
 
 
     def layout_template
-      layout_paths.each do |p|
-        Index[p] unless Index[p].nil?
+      layout_paths do |p|
+        return Index[p] unless Index[p].nil?
       end
-      nil
+      return nil
     end
 
     def parents
@@ -201,7 +217,7 @@ module Hardwired
     end
 
     def copy_vars_from(other, *vars)
-      vars = [:@filename,:@last_modified,:@format,:@path,:@raw_contents,:@line,:@metadata,:@markup,:@markup_body,:@markup_heading] if vars.nil? || vars.empty?
+      vars = [:@filename,:@last_modified,:@format,:@path,:@raw_contents,:@line,:@meta,:@markup,:@markup_body,:@markup_heading] if vars.nil? || vars.empty?
       vars.each do |v|
         instance_variable_set(v,other.instance_variable_get(v))
       end

@@ -14,6 +14,11 @@ end
 module Hardwired
 	class Page
 
+		def metadata(name)
+			meta.call(name) if meta.respond_to? name
+			nil
+		end
+
     def description
       meta.description
     end
@@ -30,6 +35,10 @@ module Hardwired
       path
     end
     
+    def categories
+    	[]
+    end
+
   end
 end
 

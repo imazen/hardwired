@@ -14,19 +14,22 @@ module Hardwired
     end
 
     def can_render?
-      return false if date && page.date >= DateTime.now 
+      return false if date && date >= DateTime.now 
       super
     end 
 
+    def is_post? 
+      date ? true : false
+    end
 
     def self.find_all
-      Index.all_pages.select { |p| ! p.hidden? }
+      Index.pages
     end
 
     def self.find_articles
-      find_all.select do |page|
-        page.date && page.date < DateTime.now
-      end.sort { |x, y| y.date <=> x.date }
+      Index.posts.sort { |x, y| debugger if y.is_a?(Array)
+
+        y.date <=> x.date }
     end
     
     def top_articles(count = 10)
@@ -66,32 +69,11 @@ module Hardwired
     end
 
     def summary
-      if summary_text = metadata("summary")
-        summary_text.gsub!('\n', "\n")
-        convert_to_html(@format, nil, summary_text)
-      end
+      meta.summary && meta.summary.gsub!('\n', "\n")
     end
 
 
-    
-    def pages
-      in_category = Hardwired::Page.find_all.select do |page|
-        page.date.nil? && page.categories.include?(self)
-      end
-      in_category.sort do |x, y|
-        by_priority = y.priority(path) <=> x.priority(path)
-        if by_priority == 0
-          x.heading.downcase <=> y.heading.downcase
-        else
-          by_priority
-        end
-      end
-    end
-
-    def articles
-      Hardwired::Page.find_articles.select { |article| article.categories.include?(self) }
-    end
-
+  
     
     def inline_summary
       metadata("summary")

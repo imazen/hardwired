@@ -15,7 +15,7 @@ module Hardwired
       Dir.glob(file_pattern).map do |path|
         #skip static files
         next if path =~ /\.static./i
-        load_physical(path)
+        _ = load_physical(path)
       end
       @@loaded = true ##So other threads know when we're done
     end
@@ -50,29 +50,32 @@ module Hardwired
       return @@cache['/' + path.sub(/^\/+/,"")]
     end
 
-    def self.files
+    def self.files(&block)
       load_all
-      Enumerator.new  do |yielder| 
+      Enumerator.new  do |y| 
         @@cache.each do |k,v|
-          yielder.yield v
+          y << v
         end
-      end 
+      end.each(&block)
+    end
+
+    def self.enum_files
+      load_all
+      Enumerator.new  do |y| 
+        @@cache.each do |k,v|      
+          y << v if yield(v)
+        end
+      end
     end
 
     def self.pages
-      zload_all
-      Enumerator.new  do |yielder| 
-        @@cache.each do |k,v|
-          yielder.yield v if v.is_page? and v.can_render?
-        end
-      end 
+      enum_files { |p| p.is_page? && p.can_render? }
     end
 
     def self.posts
-      pages.each do |p|
-        yield p if p.date
-      end
+      enum_files { |p| p.is_page? && p.can_render? && p.is_post? }
     end
+
 
 
     def self.virtual_path_for(fname)

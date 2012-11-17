@@ -1,16 +1,5 @@
-#This file sets up the default 
 
-# Hardwired route order
-=begin
-1. Static file served as is IF
-	a. File exists and 'ext' is not any supported interpreted extension, 
-	b. OR, (or path.static.ext) exists.
-
-2. Redirect slash-terminated URLs to non-slash-terminated URLs, or vice versa.
-
-=end
 #If certain folders are KNOWN to contain only static files, we can speed those up
-
 #use Rack::Static, :urls => ["/public"]
 #use Rack::Static, :urls => ["/attachments"], :root "content"
 
@@ -98,9 +87,10 @@ module Hardwired
 	  get '*' do
 	  	@page = Hardwired::Index[request.path_info]
 
+	  	debugger if !request.path_info.index(/\./) and (!@page  or !@page.can_render?)
 			#debugger
 	  	pass if !@page.can_render?
-	  	@page.render({},self)
+	  	@page.render(settings,{},self)
 	  end 
   end
 

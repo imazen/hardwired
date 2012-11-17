@@ -61,7 +61,9 @@ Headings are automatically parsed for .htmlf, .haml, .md, and .textile files. Us
 * `Aliases:` - Space delimited list of domain-local URLs to redirect to the current page. Use '+' to represent spaces in URLs
 * `Redirect To:` - Turns a page into a placeholder for a remote URL redirect
 * `Content_Type` - Ovveride the default content type
-* Layout
+* `Layout` - Specify the parent template to use when rendering the page. Defaults to `_layout/page`. Override `layout_paths` to customize interpretation and search paths.
+* `Heading` - Specify the heading 
+
 *		Flags: hidden, draft, 
 *		Libs: jquery, jquery-ui, 
 *		Heading:

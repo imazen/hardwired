@@ -34,11 +34,21 @@ module Tilt
       (Tilt["markdown"].new { temp }).render
     end
   end 
+  register PlainHtmlTemplate, 'htmf'
+  register RubyPoweredMarkdown, 'rmd'
+  register MarkdownVars, 'mdv'
+
+  def self.alternate_engine_names(engine)
+    Enumerator.new  do |y| 
+      default = Tilt[engine]
+      Tilt.mappings.each do |k,v| 
+        y << k if v.include?(default) 
+      end
+    end
+  end
 end
 
-Tilt.register Tilt::PlainHtmlTemplate, 'htmf'
-Tilt.register Tilt::RubyPoweredMarkdown, 'rmd'
-Tilt.register Tilt::MarkdownVars, 'mdv'
+
 
 module Hardwired
 
@@ -95,16 +105,16 @@ module Hardwired
 
      
    class Markdown
-     def self.heading (markup) markup =~ /^#\s*(.*?)(\s*#+|$)/ ? $1 : nil
+     def self.heading (markup) markup =~ /\A#\s*(.*?)(\s*#+|$)/ ? $1 : nil
      end
      
-     def self.body (markup) markup.sub(/^#[^#].*$\r?\n(\r?\n)?/, '')  end
+     def self.body (markup) markup.sub(/\A#[^#].*$\r?\n(\r?\n)?/, '')  end
    end
    
    class Haml
-       def self.heading (markup) markup =~  /^\s*%h1\s+(.*)/ ? $1 : nil
+       def self.heading (markup) markup =~  /\A\s*%h1\s+(.*)/ ? $1 : nil
        end
-       def self.body (markup) markup.sub(/^\s*%h1\s+.*$\r?\n(\r?\n)?/, '') end
+       def self.body (markup) markup.sub(/\A\s*%h1\s+.*$\r?\n(\r?\n)?/, '') end
    end
    
    class Textile
@@ -112,87 +122,33 @@ module Hardwired
          markup =~  /^\s*h1\.\s+(.*)/ ? $1 : nil
       end
 
-       def self.body (markup) markup.sub(/^\s*h1\.\s+.*$\r?\n(\r?\n)?/, '') end
+       def self.body (markup) markup.sub(/\A\s*h1\.\s+.*$\r?\n(\r?\n)?/, '') end
   end
    
    class Html
-       def self.heading (markup) markup =~ /^\s*<h1[^><]*>(.*?)<\/h1>/ ? $1 : nil
+       def self.heading (markup) markup =~ /\A\s*<h1[^><]*>(.*?)<\/h1>/ ? $1 : nil
        end
 
-       def self.body (markup) markup.sub(/^\s*<h1[^><]*>.*?<\/h1>\s*/, '') end
+       def self.body (markup) markup.sub(/\A\s*<h1[^><]*>.*?<\/h1>\s*/, '') end
     end
   end
 
   module MetadataParsing
 
 
-
-    class SimpleMetadataParser
-
-      def has_metadata?(text)
-        text =~ /^A[\w ]+:/
-      end
-
-      def extract(text)
-
-        ix = text.index(/\r?\n\r?\n/)
-        first_paragraph = ix.nil? ? '' : text[0..ix+2]
-        remaining = ix.nil? text : text[ix+2..-1]
-        
-        has_meta = has_metadata?(first_paragraph)
-
-        metadata = has_meta ? parse(first_paragraph) : {}
-        
-        return metadata, (has_meta ? remaining : text), has_meta
-      end
-     
-
-      def parse(metadata)
-        hash = {}
-        metadata.split("\n").each do |line|
-          key, value = line.split(/\s*:\s*/, 2)
-          next if value.nil?
-          hash[key] = value.chomp
-        end
-        hash
-      end
+    def self.extract(text)
+        #Support --- (jeykll style) and regular
+        return parse($1), $', true if text =~ /\A(---\s*\n.*?\n?)^(---\s*$\n?)/m or text =~ /\A([A-z ]+:.*?)\r?\n\r?\n/m 
+        return {}, text, false
     end
 
-    class YamlMetadataParser < SimpleMetadataParser
 
-      def has_metadata?(text)
-        text =~ /^A(---|[\w ]+:)/
-      end
-
-      def extract(text)
-          #Support --- (jeykll style)
-          if text =~ /^(---\s*\n.*?\n?)^(---\s*$\n?)/m
-            return parse($1), $POSTMATCH, true
-          else
-            super
-          end
-      end
-
-
-      def parse(metadata_segment)
-        yaml = YAML.load(metadata_segment)
-      rescue Psych::SyntaxError
-        raise MetadataParseError
-      else
-        raise MetadataParseError unless yaml
-        yaml || {}
-      end 
-
-
-
-
+    def self.parse(metadata_text)
+      yaml = YAML.load(metadata_text)
+      debugger if yaml.nil?
+      yaml
     end 
 
-    @@parser = YamlMetadataParser
-    def self.parser(val = nil)
-      @@parser = val unless val.nil?
-      @@parser
-    end 
 
   end 
 
