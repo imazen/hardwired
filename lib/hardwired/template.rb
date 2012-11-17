@@ -66,12 +66,9 @@ module Hardwired
     end
 
     def layout
-      debugger if path == '/_layout/layout'
-      
-      #All layouts in _layout must be explicitly specified
-      !meta.layout.nil? ? meta.layout : (in_layout_dir? ? nil : Paths.layout_subfolder + '/page')
-
-
+      return meta.layout unless meta.layout.nil?
+      return Paths.layout_subfolder + '/page' unless in_layout_dir?
+      nil
     end
 
     def layout_paths
@@ -115,9 +112,15 @@ module Hardwired
     end
 
     def self.load(filename)
-      t = Template.new(filename)
-      t = Page.new(t) if t.is_page?
-      t
+      begin
+        t = Template.new(filename)
+        t = Page.new(t) if t.is_page?
+        t
+      rescue
+        debugger
+        raise $!, "Error loading template #{filename}: #{$!}"
+      end 
+
     end
 
 
@@ -166,7 +169,9 @@ module Hardwired
 
       options[:inner_templates] ||= []
 
-      raise "Infinite loop in template chain: #{options[:inner_templates].map { |p| p.path}.join(' -> ')} -> #{path}!" if options[:inner_templates].include?(self) 
+debugger if options[:inner_templates].include?(self)
+
+      raise "Infinite loop in template chain: #{options[:inner_templates].map { |p| p.path}.join(' -> ')} -> #{path}  (did you override the 'layout' method?)" if options[:inner_templates].include?(self) 
 
       options[:inner_templates] << self
 

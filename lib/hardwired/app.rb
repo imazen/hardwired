@@ -67,8 +67,8 @@ module Hardwired
 			static_path = "#{base_path}.static.#{ext}"
 			interpreted_ext = !Tilt.mappings[ext].empty?
 			# We only serve the file if it's .static.* or if it's not an interpreted (Tilt-registered) extension
-			pass if interpreted_ext and !File.file?(static_path)
-			pass if !interpreted_ext and !File.file?(local_path)
+			pass if interpreted_ext && !File.file?(static_path)
+			pass if !interpreted_ext && !File.file?(local_path)
 			
 			real_path = interpreted_ext ? static_path : local_path
 
@@ -86,8 +86,9 @@ module Hardwired
 	  #All interpreted files are in the index, even scss and coffeescript
 	  get '*' do
 	  	@page = Hardwired::Index[request.path_info]
+	  	pass if @page.nil?
 
-	  	debugger if !request.path_info.index(/\./) and (!@page  or !@page.can_render?)
+	  	debugger if !request.path_info.index(/\./) && (!@page  or !@page.can_render?)
 			#debugger
 	  	pass if !@page.can_render?
 	  	@page.render(settings,{},self)

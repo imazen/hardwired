@@ -15,6 +15,8 @@ module Hardwired
       Dir.glob(file_pattern).map do |path|
         #skip static files
         next if path =~ /\.static./i
+        ext = File.extname(path)
+        next if ext.nil? || !Tilt[ext[1..-1]]
         _ = load_physical(path)
       end
       @@loaded = true ##So other threads know when we're done
