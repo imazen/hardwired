@@ -49,17 +49,10 @@ module Hardwired
       parse_string_list(meta.libs)
      end
      
-     def lib(name)
+     def lib?(name)
         libs.include?(name) or libs.include?(name.to_s)
      end
 
-     def lib?(name)
-        lib(name)
-      end
-
-    def flagged_as?(flag)
-      flags.include?(flag)
-    end
 
     def heading
       meta.heading || markup_heading
@@ -162,18 +155,17 @@ module Hardwired
       locals[:template] = self
       options[:default_encoding] ||= global_options.default_encoding if global_options.respond_to?(:default_encoding)
 
+      #Removed inner_templates so engines don't complain
+      inner_templates = options.delete(:inner_templates) || []
 
       #Render current template
       i = renderer_class.new(filename,line,options){markup_body}
       output = i.render(scope, locals, &block)
 
-      options[:inner_templates] ||= []
-
-debugger if options[:inner_templates].include?(self)
-
-      raise "Infinite loop in template chain: #{options[:inner_templates].map { |p| p.path}.join(' -> ')} -> #{path}  (did you override the 'layout' method?)" if options[:inner_templates].include?(self) 
-
-      options[:inner_templates] << self
+      ##Check for infinite loop via inner_templates
+      raise "Infinite loop in template chain: #{inner_templates.map { |p| p.path}.join(' -> ')} -> #{path}  (did you override the 'layout' method?)" if inner_templates.include?(self) 
+      inner_templates << self
+      options[:inner_templates] = inner_templates
 
       #Render parents recursively
       output = layout_template.render(global_options, options,scope,locals) {output} unless layout_template.nil? or options[:skip_layout]
@@ -210,10 +202,12 @@ debugger if options[:inner_templates].include?(self)
     end
 
     def parents
+      Enumerator.new do |y|
       parent = path
-      while !parent.empty? do
-        parent.sub!(/(^|\/)[^\/]+\/?$/m,"")
-        yield Index[parent] unless Index[parent].nil?
+        while !parent.empty? do
+          parent.sub!(/(^|\/)[^\/]+\/?$/m,"")
+          y << Index[parent] unless Index[parent].nil?
+        end
       end
     end
 

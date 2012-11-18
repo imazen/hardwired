@@ -10,6 +10,7 @@ Hardwired::ContentFormats.register Hardwired::ContentFormats::Markdown, :mdown, 
 Hardwired::ContentFormats.register Hardwired::ContentFormats::Haml, :haml
 Hardwired::ContentFormats.register Hardwired::ContentFormats::Textile, :textile
 Hardwired::ContentFormats.register Hardwired::ContentFormats::Html, :htmf
+Hardwired::ContentFormats.register Hardwired::ContentFormats::Slim, :slim
 
 
 
@@ -17,6 +18,7 @@ Encoding.default_external = 'utf-8' if RUBY_VERSION =~ /^1.9/
 module Hardwired 
 	class Base < Sinatra::Base
 
+		attr_accessor :select_menu, :page
 
 		#Make config.yml available as 'settings'
 		register Sinatra::ConfigFile
@@ -38,6 +40,29 @@ module Hardwired
 		    #_layout folder
 		    super(Hardwired::Paths.layout_path, name.to_s, engine, &block)
 		  end
+
+		  def before_render_file(file)
+		  	page = file
+		  end
+
+		  #So standard sinatra templates can access 'config'
+		  def config
+		  	settings
+		  end
+		  def index
+		  	Hardwired::Index
+		  end 
+
+		  def render_file(path, options={})
+	  		file = Hardwired::Index[path]
+	  		return nil if file.nil? || !file.can_render?
+				before_render_file(file)
+	  		file.render(settings,options,self)
+		  end
+
+		  def auto_render(path, options=nil)
+		  	#TODO - look for 'path' inside @page.filename directory, _layout, and root. Default to no layout
+		  end 
 		end
 
 		set :root, Proc.new {Hardwired::Paths.root_path }
@@ -51,11 +76,9 @@ module Hardwired
 	      not_found
 	    end
 	    #Redirect incoming urls so they don't have a trailing '/'
-	    if request.path =~ Regexp.new('./$')
-	      redirect to(request.path.sub(Regexp.new('/$'), ''))
+	    if request.path_info =~ Regexp.new('./$')
+	      redirect to(request.path_info.sub(Regexp.new('/$'), '') + request.query_string)
 	    end
-	    #Set config alias
-	    @config = settings
 	  end
 
 
@@ -85,13 +108,9 @@ module Hardwired
 
 	  #All interpreted files are in the index, even scss and coffeescript
 	  get '*' do
-	  	@page = Hardwired::Index[request.path_info]
-	  	pass if @page.nil?
-
-	  	debugger if !request.path_info.index(/\./) && (!@page  or !@page.can_render?)
-			#debugger
-	  	pass if !@page.can_render?
-	  	@page.render(settings,{},self)
+	  	output = render_file(request.path_info)
+	  	pass if output.nil?
+	  	output 
 	  end 
   end
 
@@ -107,11 +126,11 @@ module Hardwired
 
 
 	  not_found do
-	    haml(:'404')
+	    render_file('404')
 	  end
 
 	  error do
-	    haml(:'500')
+	    render_file('500')
 	  end unless development?
 
 

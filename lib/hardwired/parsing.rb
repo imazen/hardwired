@@ -131,6 +131,13 @@ module Hardwired
 
        def self.body (markup) markup.sub(/\A\s*<h1[^><]*>.*?<\/h1>\s*/, '') end
     end
+
+   class Slim
+       def self.heading (markup) markup =~  /\A\s*h1\s+(.*)/ ? $1 : nil
+       end
+       def self.body (markup) markup.sub(/\A\s*h1\s+.*$\r?\n(\r?\n)?/, '') end
+   end
+   
   end
 
   module MetadataParsing

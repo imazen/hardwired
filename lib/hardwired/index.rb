@@ -75,11 +75,17 @@ module Hardwired
     end
 
     def self.posts
-      enum_files { |p| p.is_page? && p.can_render? && p.is_post? }
+      @@cached_posts ||= enum_files { |p| p.is_page? && p.can_render? && p.is_post? }.sort { |x, y| y.date <=> x.date }
     end
 
+    def self.all_tags
+      posts.map{ |p| p.tags }.flatten.uniq
+    end
 
-
+    def self.posts_tagged(tag)
+      posts.select { |p| p.tags.include?(tag)}
+   end
+ 
     def self.virtual_path_for(fname)
       #Strip base path and last extension
       url = fname[Hardwired::Paths.content_path.length..-1]

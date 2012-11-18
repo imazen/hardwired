@@ -27,9 +27,7 @@ module Hardwired
     end
 
     def self.find_articles
-      Index.posts.sort { |x, y| debugger if y.is_a?(Array)
-
-        y.date <=> x.date }
+      Index.posts.sort { |x, y| y.date <=> x.date }
     end
     
     def top_articles(count = 10)
@@ -41,8 +39,8 @@ module Hardwired
     def title
       if meta.title
         meta.title
-      elsif parent && (! parent.heading.nil?)
-        "#{heading} - #{parent.heading}"
+      #elsif !parent.nil? && !parent.heading.nil?
+      #  "#{heading} - #{parent.heading}"
       elsif heading
         "#{heading} - #{Nesta::Config.title}"
       elsif abspath == '/'
@@ -61,11 +59,11 @@ module Hardwired
     end
 
     def atom_id
-      metadata('atom id')
+      meta.atom_id 
     end
 
     def read_more
-      metadata('read more') || 'Continue reading'
+      meta.read_more || 'Continue reading'
     end
 
     def summary
@@ -76,7 +74,7 @@ module Hardwired
   
     
     def inline_summary
-      metadata("summary")
+      meta.summary
     end
 
      def articles_by_tags

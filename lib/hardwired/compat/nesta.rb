@@ -31,6 +31,10 @@ module Hardwired
     	flag? flag
     end
 
+    def lib(name)
+    	lib?(name)
+    end
+
     def abspath
       path
     end
@@ -54,6 +58,15 @@ module Hardwired
 
 
     helpers do
+
+			def before_render_file(file)
+				@config = config
+				@page = file
+				@title = file.title
+				@description = file.meta.description
+				@keywords = file.meta.keywords
+			end
+
 
     	def url_for(page)
         File.join(base_url, page.path)

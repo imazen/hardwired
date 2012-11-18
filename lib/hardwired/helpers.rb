@@ -1,13 +1,18 @@
 module Haml
   module Helpers
-  	def menu_tag_current(tag_with_class = :selected, query = 'li', &block)
-  		Hardwired::Helpers.menu_tag_current_in_fragment(request.path,tag_with_class,query,capture_haml(&block))
+  	def menu_tag_current_haml(tag_with_class = :selected, query = 'li', &block)
+  		Hardwired::Helpers.menu_tag_current_in_fragment(select_menu || request.path_info,tag_with_class,query,capture_haml(&block))
 		end
+
 	end
 end
 
 module Hardwired
 	module Helpers
+
+    def menu_tag_current(tag_with_class = :selected, query = 'li', &block)
+      Hardwired::Helpers.menu_tag_current_in_fragment(select_menu || request.path_info,tag_with_class,query,block.call)
+    end
 
 		def self.menu_tag_current_in_fragment(path_to_find, tag_with_class, elements_to_tag, fragment)
   		require 'nokogiri'
