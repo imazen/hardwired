@@ -12,8 +12,9 @@ module Hardwired
 
     # Add a before filter to perform any redirects requested by individual pages
 
-    after do
-      return if response.status != 404
+    before do
+
+      #return if response.status != 404
       this_url = AliasTable.normalize(request.fullpath)
       table = AliasTable.all
       if table.include?(this_url)
@@ -23,14 +24,10 @@ module Hardwired
 
     ## Todo - refactor to self.class instance instead of static?
     class AliasTable
-      @@all = nil
-      
+
       # Cache the redirects table in a static variable
       def self.all
-        if @@all.nil?
-          @@all = AliasTable.build_alias_table
-        end
-        return @@all
+        @@all ||= AliasTable.build_alias_table
       end
       
       def self.build_alias_table

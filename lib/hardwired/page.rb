@@ -66,8 +66,8 @@ module Hardwired
       meta.read_more || 'Continue reading'
     end
 
-    def summary
-      meta.summary && meta.summary.gsub!('\n', "\n")
+    def summary (scope = nil, min_characters = 0)
+      meta.summary ? meta.summary.gsub!('\n', "\n") : super
     end
 
 

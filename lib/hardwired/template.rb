@@ -135,6 +135,17 @@ module Hardwired
       render(scope.settings, {:skip_layout => true}, scope )
     end
 
+    def summary(scope, min_chars)
+      text = Nokogiri::HTML(body(scope)).text.squeeze(" ").squeeze("\n")
+      sentences = text.split(/(?<!(?:[DMS]r|Mrs|Sra|st))([.?!])(?=^Z|\s)/m)
+      result = ''
+      sentences.each do |part|
+        result << part
+        #Since we can't end before adding all appropriate punctuation
+        return result if result.length > min_chars && part.length > 1
+      end 
+      result
+    end 
 
     def render(global_options = {}, options = {},scope = nil, locals=nil,&block)
       debugger if !options.is_a?(Hash) 
@@ -148,8 +159,8 @@ module Hardwired
 
       #Establish defaults for scope, locals, content type, and default encoding
       scope ||= options.delete(:scope) || Object.new
-      locals ||= {:page => self, :config => global_options, :index => Hardwired::Index}
-      locals =  options[:locals].merge(locals) if options[:locals]
+      locals ||= {}
+      locals = options[:locals].merge(locals) if options[:locals]
       
       content_type    = meta.content_type || options.delete(:content_type)  || options.delete(:default_content_type)
       locals[:template] = self
@@ -157,7 +168,9 @@ module Hardwired
 
       #Removed inner_templates so engines don't complain
       inner_templates = options.delete(:inner_templates) || []
-
+        
+      debugger if scope.config.nil?
+      
       #Render current template
       i = renderer_class.new(filename,line,options){markup_body}
       output = i.render(scope, locals, &block)

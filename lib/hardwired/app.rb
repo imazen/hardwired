@@ -16,12 +16,12 @@ Hardwired::ContentFormats.register Hardwired::ContentFormats::Slim, :slim
 
 Encoding.default_external = 'utf-8' if RUBY_VERSION =~ /^1.9/
 module Hardwired 
-	class Base < Sinatra::Base
+	class SiteBase < Sinatra::Base
+
+
 
 		attr_accessor :select_menu, :page
 
-		#Make config.yml available as 'settings'
-		register Sinatra::ConfigFile
 
 		#Enable content_for in templates
 		register Sinatra::ContentFor
@@ -32,7 +32,18 @@ module Hardwired
 		#Import helper methods
 		helpers Hardwired::Helpers
 
+		class << self
+			def config_file(path)
+	      Hardwired::Config.load(path, self)
+	    end 
+		end 
+
+
 		helpers do
+
+	    def config
+	      Hardwired::Config.config
+	    end
 
 	    def find_template(views, name, engine, &block)
 		  	#normal
@@ -45,10 +56,7 @@ module Hardwired
 		  	page = file
 		  end
 
-		  #So standard sinatra templates can access 'config'
-		  def config
-		  	settings
-		  end
+
 		  def index
 		  	Hardwired::Index
 		  end 
@@ -57,7 +65,7 @@ module Hardwired
 	  		file = Hardwired::Index[path]
 	  		return nil if file.nil? || !file.can_render?
 				before_render_file(file)
-	  		file.render(settings,options,self)
+	  		file.render(config,options,self)
 		  end
 
 		  def auto_render(path, options=nil)
@@ -114,7 +122,7 @@ module Hardwired
 	  end 
   end
 
-  class Bootstrap < Base
+  class Bootstrap < SiteBase
 
     get '/robots.txt' do
       content_type 'text/plain', :charset => 'utf-8'

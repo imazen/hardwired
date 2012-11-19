@@ -40,9 +40,6 @@ EOF
 
   
   # Test libraries
-  s.add_development_dependency('hpricot', '0.8.4')
-  s.add_development_dependency('rack-test', '0.6.1')
-  s.add_development_dependency('rspec', '1.3.0')
-  s.add_development_dependency('rspec_hpricot_matchers', '1.0')
-  s.add_development_dependency('test-unit', '1.2.3')
+  s.add_development_dependency('minitest')
+  s.add_development_dependency('rack-test')
 end

@@ -52,7 +52,7 @@ module Hardwired
 
    	## Make Nesta::Config work
     before '*' do
-    	Nesta::Config = settings unless defined?(Nesta::Config)
+    	Nesta::Config = Hardwired::Config.config unless defined?(Nesta::Config)
     end
 
 
@@ -60,7 +60,7 @@ module Hardwired
     helpers do
 
 			def before_render_file(file)
-				@config = config
+				#@config = config
 				@page = file
 				@title = file.title
 				@description = file.meta.description
