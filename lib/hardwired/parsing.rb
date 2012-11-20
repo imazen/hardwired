@@ -142,18 +142,24 @@ module Hardwired
 
   module MetadataParsing
 
+    def self.separate(text)
+        #Support --- (jeykll style) and regular
+        return $1, $', true if text =~ /\A(---\s*\n.*?\n?)^(---\s*$\n?)/m or text =~ /\A([A-z ]+:.*?)\r?\n\r?\n/m 
+        return "", text, false
+    end
+
 
     def self.extract(text)
-        #Support --- (jeykll style) and regular
-        return parse($1), $', true if text =~ /\A(---\s*\n.*?\n?)^(---\s*$\n?)/m or text =~ /\A([A-z ]+:.*?)\r?\n\r?\n/m 
-        return {}, text, false
+      a,b,found = separate(text)
+      m = parse(a)
+      b = a + b if m.nil? #Restore non-metadata text
+      return (m || {}), b, found && !m.nil?
     end
 
 
     def self.parse(metadata_text)
       yaml = YAML.load(metadata_text)
-      debugger if yaml.nil?
-      yaml
+      yaml.is_a?(Hash) ? yaml : nil
     end 
 
 
