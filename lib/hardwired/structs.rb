@@ -41,7 +41,7 @@ class RecursiveOpenStruct < OpenStruct
 
   def initialize(hash=nil, args={})
     @recurse_over_arrays = args.fetch(:recurse_over_arrays,false)
-    @case_insensitive = args.fetch(:case_insensitive,false)
+    @case_insensitive = true
     
     @table = CaseInsensitiveHash.new
     if hash
@@ -55,12 +55,13 @@ class RecursiveOpenStruct < OpenStruct
   
   def [](key) @table[key] end
 
-  def new_ostruct_member(name)
-    name = name.to_s.downcase.to_sym
+  def new_ostruct_member(tablename)
+
+    name = tablename.to_s.downcase.gsub(" ","_").to_sym
     unless self.respond_to?(name)
       class << self; self; end.class_eval do
         define_method(name) do
-          v = @table[name]
+          v = @table[tablename]
           if v.is_a?(Hash)
             RecursiveOpenStruct.new(v)
           elsif v.is_a?(Array) && @recurse_over_arrays
@@ -69,8 +70,8 @@ class RecursiveOpenStruct < OpenStruct
             v
           end
         end
-        define_method("#{name}=") { |x| modifiable[name] = x }
-        define_method("#{name}_as_a_hash") { @table[name] }
+        define_method("#{name}=") { |x| modifiable[tablename] = x }
+        define_method("#{name}_as_a_hash") { @table[tablename] }
       end
     end
     name

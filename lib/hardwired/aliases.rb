@@ -36,19 +36,19 @@ module Hardwired
           dest = p.path
           if p.meta.redirect_to
             dest = p.meta.redirect_to
-            table[AliasTable.normalize(p.abspath)] = dest
+            table[AliasTable.normalize(p.path)] = dest
           end
           p.aliases.each  do |url| 
-            #raise "Invalid alias #{url} for #{p.path} will cause a cyclic redirect" 
-            next if  (AliasTable.normalize(url) == AliasTable.normalize(dest))
-            table[AliasTable.normalize(url)] = dest
-            table[AliasTable.normalize(url) + '/'] = dest
+            url = AliasTable.normalize(url)
+            #prevent cyclic redirects
+            table[url] = dest unless url == AliasTable.normalize(dest)
           end
         end
         return table
       end
       
       def self.normalize(url)
+        #Decode + -> " ", remove trailing slash, lowercase
         return url.gsub("+"," ").sub(/(\/)+$/,'').downcase #TODO: Normalize url encoding
       end
     end
