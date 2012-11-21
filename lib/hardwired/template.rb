@@ -1,11 +1,14 @@
 module Hardwired
   class Template
+    module ContentTyped
+      attr_accessor :content_type
+    end
 
     #Returns true if this file is a content file, such as a page or a post
     def is_page?
       return true if flag?('page')  #Permit override with Flags: page
       return false if in_layout_dir? #no pages in _layout
-      return false if [:sass,:scss,:coffee].include?(engine_name) #Never css or javascript
+      return false if [:sass,:scss, :less, :coffee].include?(engine_name) #Never css or javascript
       true
     end
 
@@ -60,8 +63,8 @@ module Hardwired
 
     def layout
       return meta.layout unless meta.layout.nil?
-      return Paths.layout_subfolder + '/page' unless in_layout_dir?
-      nil
+      return nil if in_layout_dir? || [:scss,:sass,:less,:coffee].include?(@format.to_sym)
+      return Paths.layout_subfolder + '/page'
     end
 
     def layout_paths
@@ -94,6 +97,9 @@ module Hardwired
       @meta, @markup, has_meta = MetadataParsing.extract(@raw_contents)
       debugger if !@meta.is_a?(Hash)
       @meta = RecursiveOpenStruct.new(@meta)
+
+      #remove leading whitespace so parsing works properly
+      @markup.lstrip!
 
 
       @markup_heading = ContentFormats[@format].nil? ? nil : ContentFormats[@format].heading(markup)
@@ -162,7 +168,7 @@ module Hardwired
       locals ||= {}
       locals = options[:locals].merge(locals) if options[:locals]
       
-      content_type    = meta.content_type || options.delete(:content_type)  || options.delete(:default_content_type)
+      content_type    = meta.content_type || options.delete(:content_type) || renderer_class.default_mime_type || options.delete(:default_content_type)
       locals[:template] = self
       options[:default_encoding] ||= global_options.default_encoding if global_options.respond_to?(:default_encoding)
 
@@ -170,7 +176,10 @@ module Hardwired
       inner_templates = options.delete(:inner_templates) || []
         
       debugger if scope.config.nil?
-      
+
+      #Change current directory for benefit of less/scss/etc
+      Dir.chdir(File.dirname(filename))
+
       #Render current template
       i = renderer_class.new(filename,line,options){markup_body}
       output = i.render(scope, locals, &block)

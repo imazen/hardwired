@@ -61,8 +61,9 @@ module Hardwired
 
 			def before_render_file(file)
 				#@config = config
+
 				@page = file
-				@title = file.title
+				@title = file.title if file.is_page?
 				@description = file.meta.description
 				@keywords = file.meta.keywords
 			end
@@ -78,7 +79,7 @@ module Hardwired
       end
   
       def absolute_urls(text)
-        text.gsub!(/(<a href=['"])\//, '\1' + base_url + '/')
+        text.gsub!(/(<a href=['"])\//, '\1' + base_url + '/') if text 
         text
       end
   

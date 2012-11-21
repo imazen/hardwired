@@ -56,6 +56,9 @@ module Hardwired
 		  	page = file
 		  end
 
+		  def dev?
+		  	Sinatra::Base.development?
+		  end 
 
 		  def index
 		  	Hardwired::Index
@@ -144,20 +147,7 @@ module Hardwired
 
 
 
-	  get '/articles.xml' do
-	    content_type :xml, :charset => 'utf-8'
-	    @articles = Index.find_articles.select { |a| a.date }[0..9]
-	    haml(:atom, :format => :xhtml, :layout => false)
-	  end
 
-	  get '/sitemap.xml' do
-	    content_type :xml, :charset => 'utf-8'
-	    @pages = Index.find_all
-	    @last = @pages.map { |page| page.last_modified }.inject do |latest, page|
-	      (page > latest) ? page : latest
-	    end
-	    haml(:sitemap, :format => :xhtml, :layout => false)
-	  end
 
 	end
 end

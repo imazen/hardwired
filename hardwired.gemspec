@@ -29,12 +29,7 @@ EOF
 
 
   s.add_dependency('tilt')
-  s.add_dependency('haml')
-  s.add_dependency('sass')
-  s.add_dependency('erubis')
   s.add_dependency('nokogiri')
-  s.add_dependency('rdiscount', '~> 1.6')
-  s.add_dependency('RedCloth', '~> 4.2')
   s.add_dependency('sinatra', '>= 1.3.3')
   s.add_dependency('sinatra-contrib')
 
