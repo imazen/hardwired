@@ -71,16 +71,25 @@ module Hardwired
     end
 
     def self.pages
-      enum_files { |p| p.is_page? && p.can_render? }
+      @@cached_pages ||= enum_files { |p| p.is_page? && p.can_render? }.to_a
     end
 
     def self.posts
       @@cached_posts ||= enum_files { |p| p.is_page? && p.can_render? && p.is_post? }.sort { |x, y| y.date <=> x.date }
     end
 
-    def self.all_tags
+    def self.page_tags
+      pages.map{ |p| p.tags }.flatten.uniq
+    end
+
+
+    def self.post_tags
       posts.map{ |p| p.tags }.flatten.uniq
     end
+
+    def self.pages_tagged(tag)
+      pages.select { |p| p.tags.include?(tag)}
+   end
 
     def self.posts_tagged(tag)
       posts.select { |p| p.tags.include?(tag)}

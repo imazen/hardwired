@@ -42,9 +42,9 @@ module Hardwired
       #elsif !parent.nil? && !parent.heading.nil?
       #  "#{heading} - #{parent.heading}"
       elsif heading
-        "#{heading} - #{Nesta::Config.title}"
+        "#{heading} - #{Hardwired::Config.config.title}"
       elsif abspath == '/'
-        Nesta::Config.title
+        Hardwired::Config.config.title
       end
     end
 
