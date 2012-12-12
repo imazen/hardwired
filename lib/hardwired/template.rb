@@ -30,7 +30,7 @@ module Hardwired
 
 
     def hidden?
-      flag?('hidden') or (!Harwired::SiteBase.development? and draft?)
+      flag?('hidden') or (!Hardwired::SiteBase.development? and draft?)
     end
 
     def draft?
