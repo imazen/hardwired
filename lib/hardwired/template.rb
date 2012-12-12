@@ -12,6 +12,10 @@ module Hardwired
       true
     end
 
+    def is_post?
+      false
+    end
+
     def in_layout_dir?
       
       !path.index(Paths.layout_subfolder).nil? && path.index(Paths.layout_subfolder) < 2 
@@ -25,12 +29,8 @@ module Hardwired
     end 
 
 
-    def is_visible_page?
-      is_page? and !hidden?
-    end 
-
     def hidden?
-      flag?('hidden') or (!Base.development? and draft?)
+      flag?('hidden') or (!Harwired::SiteBase.development? and draft?)
     end
 
     def draft?
