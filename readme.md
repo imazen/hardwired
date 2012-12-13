@@ -13,15 +13,17 @@ Hardwired is embeddable, self-contained, and easy to modify.
 ####Samples
 
 * [Absurdly minimal example](https://github.com/nathanaeljones/hardwired-sample-minimal)
-* [Basic site with Twitter Bootstrap, Google Analytics, and Disqus](https://github.com/nathanaeljones/hardwired-sample-bootstrap)
+* [Basic site with Twitter Bootstrap, Google Analytics, and Disqus](https://github.com/nathanaeljones/hardwired-sample-bootstrap) - not yet complete
 * [My personal blog](https://github.com/nathanaeljones/njcom)
 
 ####Additional resources:
 
 * [Frequently asked questions](https://github.com/nathanaeljones/hardwired/blob/master/faq.md)
-* [Creating a hardwired site - step-by-step](https://github.com/nathanaeljones/hardwired/blob/master/tutorial.md)
+* [Creating a hardwired site - step-by-step](https://github.com/nathanaeljones/hardwired/blob/master/tutorial.md)  - not yet complete
 
 * [Migrating from NestaCMS](https://github.com/nathanaeljones/hardwired/blob/master/migrating-from-nesta.md)
+* [Migrating from Wordpress (with import script!)](https://github.com/nathanaeljones/hardwired/blob/master/migrating-from-wordpress.md)
+
 
 ## Definitions
 
