@@ -1,5 +1,19 @@
-[# Frequently asked questions
+# Frequently asked questions
 
+
+## How do I hide pages & posts flagged draft *on my development machine*?
+
+This monkey-patch will change the behavior of the 'Flags: draft' metadata to be environment-agnostic:
+
+      module Hardwired
+        class Template
+          def hidden?
+            flag?('hidden') or draft?
+          end
+        end
+      end
+
+Yeah, we might make a setting for this eventually; but we want to keep the settings count as low as possible till V1.0
 
 ## Is there anything special I need to do for Heroku?
 
@@ -20,7 +34,7 @@ At the top of site.rb, you can change the content and layout subfolders by addin
 
 ## Force a static file to download instead of display
 
-To force a static file to download instead of display in-browser, add "?download=true" to the URL. Hardwired will notice this and send the appropriate content-disposition headers.
+To force a static file to download instead of display in-browser, add `?download=true` to the URL. Hardwired will notice this and send the appropriate content-disposition headers.
 
 
 ## Highlighting the currently selected menu item
@@ -124,13 +138,10 @@ Monkey-patching is easy; drop this at the top of site.rb (or create another .rb 
 
 2. Add a new route to Site.rb 
       
-      class Site < Hardwired::Bootstrap
-        get %r{/google([0-9a-z]+).html?} do |code|
-          "google-site-verification: google#{code}.html" if config.google_verify.include?(code)
+        class Site < Hardwired::Bootstrap
+          get %r{/google([0-9a-z]+).html?} do |code|
+            "google-site-verification: google#{code}.html" if config.google_verify.include?(code)
+          end
         end
-      end
 
 3. Done! No more clutter
-
-
-    register Hardwired::Wordpress]
