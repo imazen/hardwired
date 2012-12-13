@@ -17,35 +17,21 @@ You can leave /content/attachments as-is, if you wish.
 
 Hardwired does not use menu generators - instead, it provides a HTML filter function that can tag the currently opened page with any css class.
 
-First parameter is the css class to tag elements with, second paramater the CSS selector used to select parents of the active hyperlink.
-
-	= menu_tag_current 'current','li' do
-		%ul.menu
-			%li
-				%a{:href => "/"} home
-			%li
-				%a{:href => "/download"} download
-			%li
-				%a{:href => "/plugins"} Plugins
-			%li
-				%a{:href => "/docs"} Docs
-			%li
-				%a{:href => "/support"} Support
-			%li
-				%a{:href => "/licenses"} Licenses
+See [this page for usage instructions](https://github.com/nathanaeljones/hardwired/blob/master/advanced.md).
 
 Remember to update all references to the `menu_items`, `display_menu`, or `display_menu_items` helpers or the `Menu` class
 
 
 ## 2. Include `hardwired/nesta` compatibility routes and aliases
 
-In site.rb, at the top of the file, add
+In site.rb, add 'require' and 'register' calls
 
 		require 'hardwired/compat/nesta'
 
-Within the application, call
-	
-		register Hardwired::Nesta
+		class Site < Hardwired::Bootstrap
+				
+				##And call this line inside the class
+				register Hardwired::Nesta
 
 
 ## 3. Migrate helper references
@@ -54,4 +40,11 @@ Within the application, call
 1. You will need to rename any .erubis files to .erb, and change any HAML that uses the 'erubis' command to 'erb'.
 2. Replace any uses of the 'auto' or 'stylesheet' helpers with the appropriate template command, such as 'haml', 'erb', 'mardkown', etc.
 
-4. Replace references to Nesta::Config with 'settings' (an instance member of Sinatra App)
+4. Replace references to Nesta::Config with Hardwired::Config.config
+
+
+## 4. (optional) Migrate to slim
+
+Slim is far superior to HAML in nearly every way. If you want some iffy help converting, use this gem: 
+
+	gem 'haml2slim', group: :development 
