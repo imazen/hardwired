@@ -72,7 +72,7 @@ module Hardwired
 		  end
 
 		  def auto_render(path, options=nil)
-		  	#TODO - look for 'path' inside @page.filename directory, _layout, and root. Default to no layout
+		  	#TODO - look for 'path' inside current directory, _layout, and root. Default to no layout
 		  end 
 		end
 
@@ -143,9 +143,6 @@ module Hardwired
 	  error do
 	    render_file('500')
 	  end unless development?
-
-
-
 
 
 
