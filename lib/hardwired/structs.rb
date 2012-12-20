@@ -29,6 +29,36 @@ require 'ostruct'
 
 module Hardwired
 
+  #Like a hash, but retrival works even if the key has additional characters afterwars.
+  #keys are bucketed by the prefix length. 
+  #O(M log N), where M is the length of the longest prefix, and N is the number of prefixes sharing a length.
+  class PrefixHash
+
+    def buckets
+      @a || []
+    end 
+
+    def [](key)
+      return nil if @a.nil?
+      #it would be better to reverse_each_with_index, but that doesn't exist
+      result = nil
+      @a.each_with_index do |v,i|
+        next if v.nil?
+        break if key.length < i -1 
+        part = key[0..i]
+        result = v[part]
+        break if !result.nil?
+      end 
+      return result
+
+    end
+    def []=(name, value)
+      @a ||= []
+      @a[name.length-1]  ||= Hash.new
+      @a[name.length-1][name] = value;
+    end
+
+  end 
 
   class CaseInsensitiveHash < Hash
     def [](key) super(key.to_s.downcase.to_sym) end

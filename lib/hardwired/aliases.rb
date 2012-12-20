@@ -15,23 +15,41 @@ module Hardwired
     before do
 
       #return if response.status != 404
-      this_url = AliasTable.normalize(request.fullpath)
-      table = AliasTable.all
-      if table.include?(this_url)
-        redirect table[this_url], 301 # Always do permanent redirects
+      #Don't consider querystring when performing comparison
+      this_url = AliasTable.normalize(request.path)
+      this_full_url = AliasTable.normalize(request.fullpath)
+      table = AliasTable.exact
+      prefixes = AliasTable.prefixes
+
+      dest ||= table[this_full_url]
+      dest ||= table[this_url]
+      dest ||= prefixes[this_full_url]
+
+      if dest
+        redirect dest, 301 # Always do permanent redirects
       end
     end
 
     ## Todo - refactor to self.class instance instead of static?
     class AliasTable
 
+      @@exact = nil
+      @@prefixes = nil
+
       # Cache the redirects table in a static variable
-      def self.all
-        @@all ||= AliasTable.build_alias_table
+      def self.exact
+        @@exact, @@prefixes = AliasTable.build_alias_tables if @@exact.nil?
+        @@exact
+      end
+
+      def self.prefixes
+        @@exact, @@prefixes = AliasTable.build_alias_tables if @@prefixes.nil?
+        @@prefixes
       end
       
-      def self.build_alias_table
+      def self.build_alias_tables
         table = {}
+        prefixes = PrefixHash.new
         Index.files.each do |p| 
           dest = p.path
           if p.meta.redirect_to
@@ -39,12 +57,18 @@ module Hardwired
             table[AliasTable.normalize(p.path)] = dest
           end
           p.aliases.each  do |url| 
-            url = AliasTable.normalize(url)
-            #prevent cyclic redirects
-            table[url] = dest unless url == AliasTable.normalize(dest)
+            if url.end_with?("*")
+              url = AliasTable.normalize(url[0..-2])
+              #prevent cyclic redirects
+              prefixes[url] = dest unless AliasTable.normalize(dest).start_with?(url)
+            else
+              url = AliasTable.normalize(url)
+              #prevent cyclic redirects
+              table[url] = dest unless url == AliasTable.normalize(dest)
+            end
           end
         end
-        return table
+        return table, prefixes
       end
       
       def self.normalize(url)
@@ -60,7 +84,7 @@ module Hardwired
   
     def aliases
       if meta.aliases
-        return meta.aliases.split(/\s+/) # Aliases are separated by whitespaces. Use '+' to represent a space in a URL.
+        return meta.aliases.is_a?(Array) ? meta.aliases : meta.aliases.split(/\s+/) # Aliases are separated by whitespaces. Use '+' to represent a space in a URL.
       else
         return []
       end
