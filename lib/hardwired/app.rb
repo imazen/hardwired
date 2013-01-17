@@ -41,6 +41,11 @@ module Hardwired
 
 		helpers do
 
+  		def url_for(page)
+        File.join(request.base_url, page.is_a?(Template) ? page.path : page)
+      end
+
+
 	    def config
 	      Hardwired::Config.config
 	    end
@@ -53,7 +58,7 @@ module Hardwired
 		  end
 
 		  def before_render_file(file)
-		  	page = file
+		  	self.page = file
 		  end
 
 		  def dev?
