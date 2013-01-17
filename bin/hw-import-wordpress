@@ -12,7 +12,7 @@
 # bundle exec hw-import-wordpress  -d keep-metadata
 
 # Or, drop everything
-# bundle exec hw-import-wordpress  -d "Author","wp_status","Flags","wp_date","wp_template","Aliases","Atom ID","Post ID","Status","wp_categories","wp_tags", "Tags"
+# bundle exec hw-import-wordpress  -d "Author","wp_status","Flags","wp_date","wp_template","Aliases","Atom ID","WP ID","Status","wp_categories","wp_tags", "Tags"
 
 # If you're not using wordpress.xml, you can specify it
 # bundle exec hw-import-wordpress  -c wordpress-2.xml
@@ -40,7 +40,7 @@ module Hardwired
           downloadattachments = true
           root = Dir.pwd
           filename = "wordpress.xml"
-          drop_metadata=["Author","wp_date","wp_template","Post ID"]
+          drop_metadata=["Author","wp_date","wp_template"]
           
           options = {}
           OptionParser.new do |opts|
@@ -63,7 +63,7 @@ module Hardwired
             end
             
             opts.on("-d","--drop-metadata \"Author\",\"wp_date\",\"wp_template\"", Array, 
-            "Drop the specified metadata items from the all files during conversion. No spaces between items allowed. Specify --drop-metadata none to drop no metadata. Defaults to dropping \"Author\",\"wp_date\",\"wp_template\",\"Post ID\"") do |list|
+            "Drop the specified metadata items from the all files during conversion. No spaces between items allowed. Specify --drop-metadata none to drop no metadata. Defaults to dropping \"Author\",\"wp_date\",\"wp_template\"") do |list|
               drop_metadata = list
             end
             
@@ -185,7 +185,8 @@ module Hardwired
           post_id = item.at('wp:post_id').inner_text
           urls = [item.at('link').inner_text,
                   item.at('guid').inner_text,
-                  get_domain(item.at('link').inner_text) + "/?p=#{post_id}"]
+                  get_domain(item.at('link').inner_text) + "/?p=#{post_id}",
+                 "/?page_id=#{post_id}"]
           meta_url = metadata["url"]
           urls.push(get_domain(item.at('link').inner_text) + '/' + strip_domain(meta_url).gsub(/^\//,"")) if not meta_url.nil?
           #Cleanse array
@@ -367,7 +368,7 @@ module Hardwired
               metadata = {
                         "Aliases" => alternate_urls * " ",
                         "Atom ID" => item.at('guid').inner_text.strip,
-                        "Post ID" => post_id,
+                        "WP ID" => post_id,
                         "Author" => authors[item.at('dc:creator').inner_text.strip],                
                         "Summary" => item.at('excerpt:encoded').inner_text.strip,
                         "Flags" => status == "publish" ? "" : "draft",
