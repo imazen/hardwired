@@ -48,13 +48,21 @@ module Hardwired
     end 
 
 
-     def libs
+    def libs
       parse_string_list(meta.libs)
-     end
-     
-     def lib?(name)
-        libs.include?(name) or libs.include?(name.to_s)
-     end
+    end
+
+    def lib?(name)
+      libs.include?(name) or libs.include?(name.to_s)
+    end
+
+    def tags
+      parse_string_list(meta.tags)
+    end
+
+    def tag?(name)
+      tags.include?(name) or tags.include?(name.to_s)
+    end 
 
 
     def heading

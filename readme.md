@@ -20,7 +20,6 @@ Hardwired is embeddable, self-contained, and easy to modify.
 
 * [Frequently asked questions](https://github.com/nathanaeljones/hardwired/blob/master/faq.md)
 * [Creating a hardwired site - step-by-step](https://github.com/nathanaeljones/hardwired/blob/master/tutorial.md)  - not yet complete
-
 * [Migrating from NestaCMS](https://github.com/nathanaeljones/hardwired/blob/master/migrating-from-nesta.md)
 * [Migrating from Wordpress (with import script!)](https://github.com/nathanaeljones/hardwired/blob/master/migrating-from-wordpress.md)
 

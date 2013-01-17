@@ -22,18 +22,7 @@ module Hardwired
       date ? true : false
     end
 
-    def self.find_all
-      Index.pages
-    end
 
-    def self.find_articles
-      Index.posts.sort { |x, y| y.date <=> x.date }
-    end
-    
-    def top_articles(count = 10)
-      Page.find_articles.select { |a| a.date }[0..count-1]
-    end
-  
 
   
     def title
@@ -70,29 +59,13 @@ module Hardwired
       meta.summary ? meta.summary.gsub!('\n', "\n") : super
     end
 
-
-  
-    
     def inline_summary
       meta.summary
     end
 
-     def articles_by_tags
-       Hardwired::Page.find_articles.select { |article| not (article.tags & self.tags).empty? }
-     end
-     def self.articles_by_tag(tag)
-        Hardwired::Page.find_articles.select { |article| not (article.tags & [tag]).empty? }
-      end
-
-     def tags
-      parse_string_list(meta.tags)
-     end
-
-     def tag?(name)
-      tags.include?(name)
-    end 
-    
-
-
+    def other_pages_with_shared_tags
+       Hardwired::Index.pages.select { |p| not (p.tags & self.tags).empty? }
+    end
+ 
   end
 end 

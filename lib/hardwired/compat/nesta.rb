@@ -43,6 +43,26 @@ module Hardwired
     	[]
     end
 
+
+    def self.find_all
+      Index.pages
+    end
+
+    def self.find_articles
+      Index.posts
+    end
+    
+    def top_articles(count = 10)
+      Page.find_articles.select { |a| a.date }[0..count-1]
+    end
+  
+    def articles_by_tags
+       Hardwired::Page.find_articles.select { |article| not (article.tags & self.tags).empty? }
+     end
+     def self.articles_by_tag(tag)
+       Hardwired::Page.find_articles.select { |article| not (article.tags & [tag]).empty? }
+     end
+
   end
 end
 
@@ -85,7 +105,7 @@ module Hardwired
   
       def nesta_atom_id_for_page(page)
         published = page.date.strftime('%Y-%m-%d')
-        "tag:#{request.host},#{published}:#{page.abspath}"
+        "tag:#{request.host},#{published}:#{page.path}"
       end
   
       def atom_id(page = nil)
@@ -123,7 +143,7 @@ module Hardwired
         haml_tag :ul, :class => options[:class] do
           breadcrumb_ancestors[0...-1].each do |page|
             haml_tag :li do
-              haml_tag :a, :<, :href => path_to(page.abspath), :itemprop => 'url' do
+              haml_tag :a, :<, :href => path_to(page.path), :itemprop => 'url' do
                 haml_tag :span, :<, :itemprop => 'title' do
                   haml_concat link_text(page)
                 end
