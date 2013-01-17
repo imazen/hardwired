@@ -48,7 +48,7 @@ module Hardwired
     end
 
     def atom_id
-      meta.atom_id 
+      meta.atom_id || "tag:#{Hardwired::Config.config.atom_id || Hardwired::Config.config.url  || request.host},#{date ? date.strftime('%Y-%m-%d') : ""}:#{path}"
     end
 
     def read_more
@@ -56,7 +56,7 @@ module Hardwired
     end
 
     def summary (scope = nil, min_characters = 200)
-      meta.summary ? meta.summary.gsub!('\n', "\n") : super
+      meta.summary ? meta.summary.gsub('\n', "\n") : first_sentences(scope,min_characters)
     end
 
     def inline_summary
