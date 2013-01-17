@@ -18,7 +18,7 @@ Encoding.default_external = 'utf-8' if RUBY_VERSION =~ /^1.9/
 module Hardwired 
 	class SiteBase < Sinatra::Base
 
-
+	
 
 		attr_accessor :select_menu, :page
 
@@ -129,10 +129,10 @@ module Hardwired
 
     get '/robots.txt' do
       content_type 'text/plain', :charset => 'utf-8'
-      <<-EOF
-# robots.txt
-# See http://en.wikipedia.org/wiki/Robots_exclusion_standard
-      EOF
+      
+      output = "# robots.txt\n# See http://en.wikipedia.org/wiki/Robots_exclusion_standard\n" 
+      output += "Sitemap: #{url_for('/sitemap.xml')}"
+      return output
     end
 
 
