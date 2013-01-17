@@ -152,17 +152,25 @@ module Hardwired
       render(scope.settings, {:skip_layout => true}, scope )
     end
 
-    def summary(scope, min_chars)
-      text = Nokogiri::HTML(body(scope)).text.squeeze(" ").squeeze("\n")
+    def render_plaintext(scope)
+      Nokogiri::HTML(body(scope)).text.squeeze(" \n\t")
+    end
+
+    def first_sentences(scope, min_chars)
+      text = render_plaintext(scope)
       sentences = text.split(/(?<!(?:[DMS]r|Mrs|Sra|st))([.?!])(?=^Z|\s)/m)
       result = ''
+      #We can't end before adding all appropriate punctuation
+        
       sentences.each do |part|
+        break if result.length > min_chars && part.length > 1 && !(result =~ /\A\s*\Z/)
         result << part
-        #Since we can't end before adding all appropriate punctuation
-        return result if result.length > min_chars && part.length > 1
       end 
+
       result
-    end 
+    end
+
+
 
     def render(global_options = {}, options = {},scope = nil, locals=nil,&block)
       debugger if !options.is_a?(Hash) 
