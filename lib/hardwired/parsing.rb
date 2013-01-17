@@ -158,7 +158,11 @@ module Hardwired
 
 
     def self.parse(metadata_text)
-      yaml = YAML.load(metadata_text)
+      begin
+        yaml = YAML.load(metadata_text)
+      rescue Psych::SyntaxError
+        raise $!, "#{$!}\n\n METADATA:\"#{metadata_text}\""
+      end
       yaml.is_a?(Hash) ? yaml : nil
     end 
 

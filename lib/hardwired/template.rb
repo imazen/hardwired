@@ -101,8 +101,11 @@ module Hardwired
         }
       end
 
-
-      @meta, @markup, has_meta = MetadataParsing.extract(@raw_contents)
+      begin
+        @meta, @markup, has_meta = MetadataParsing.extract(@raw_contents)
+      rescue Psych::SyntaxError
+        raise $!, "Invalid metadata in #{@path} \n #{$!}"
+      end
       debugger if !@meta.is_a?(Hash)
       @meta = RecursiveOpenStruct.new(@meta)
 
@@ -125,7 +128,7 @@ module Hardwired
         t
       rescue
         debugger
-        raise $!, "Error loading template #{filename}: #{$!}"
+        raise $!, "Error loading template '#{filename}': #{$!}"
       end 
 
     end
