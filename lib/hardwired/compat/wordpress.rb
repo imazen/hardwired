@@ -19,14 +19,14 @@ module Hardwired
 
       dest = nil
 
-      if request.GET["p"] =~ /^\d+$/
+      if request.GET["p"] =~ /\A\d+\Z/
         dest ||= PageIdentifiers.ids[request.GET["p"].to_i]
       end
-      if request.GET["page_id"] =~ /^\d+$/
+      if request.GET["page_id"] =~ /\A\d+\Z/
         dest ||= PageIdentifiers.ids[request.GET["page_id"].to_i]
       end
 
-      if request.path =~ /^\/(\d+)\//
+      if request.path =~ /\A\/(\d+)\//
         dest ||= PageIdentifiers.ids[$1.to_i]
       end
 
