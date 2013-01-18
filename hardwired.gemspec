@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
   s.authors     = ["Nathanael Jones"]
   s.email       = ["nathanael.jones@gmail.com"]
   s.homepage    = "http://github.com/nathanaeljones/hardwired"
-  s.summary     = %q{Simple file-based cms with very little magic}
+  s.summary     = %q{Simple, unmagical file-based cms}
   s.description = <<-EOF
 Hardwired is an embedded content management system for ruby websites.
 It favors direct connections over abstraction and indirection.

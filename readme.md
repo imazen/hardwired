@@ -51,7 +51,7 @@ Hardwired is embeddable, self-contained, and easy to modify.
 	4. [Slim](http://slim-lang.com/) - *.slim - Fantastic for layouts and complex pages, much more intuitive and readable than HAML.
 	5. [Erubis](http://www.kuwata-lab.com/erubis/) - *.erubis - For those who like `<%= %>` too much to let it go.
 	
-	You can access the index via `Hardwired::Index`, or using the `index` variable within a file. 
+	You can access the index via `Hardwired::Index`, or using the `index` variable within a template or the app scope. 
 
 
 3. Static files are served as you would expect.
@@ -143,7 +143,7 @@ Keeping config, index, and page data access simple is a very high priority.
 * .layout - Retuns a string path to the parent layout. Defaults to '/_layout/page', override with meta.layout. Defaults nil for scss,sass,less,coffe files, and files in _layout.
 * .layout_template - Returns a Template instance for the parent layout. Returns nil if .layout is nil or cannot be found (search path is /content/, current folder, /content/_layout/)
 * .renderer_class - Returns a reference to the class (not an instance of it) that should be used to render the template. Override with meta.renderer. 
-* .render(global_options = {}, options = {},scope = nil, locals=nil,&block) - You must pass the application instance ('self') as the paramter for 'scope' in order for references to work. Renders parent layout chain as well, unless {:skip_layout => true} is provided for 'options'.
+* .render(global_options = {}, options = {},scope = nil, locals=nil,&block) - You must pass the application instance ('self') as the paramter for 'scope' in order for references to work. Renders parent layout chain as well, unless {:layout => false} is provided for 'options'.
 * .body(scope) - Renders just this file (not the layout(s) it references).
 * .summary(scope, min_chars) - Extracts the first few sentences from .body(scope) as plain text, continuing until at least 'min_chars' are accumulated.
 
@@ -181,7 +181,8 @@ Headings are not rendered unless a layout displays them using 'page.heading'.
 * `Flags: draft` - The page/post is displayed in development, but not in production.
 
 *	`Libs: jquery, jquery-ui, ` - A way for pages and layouts to communicate about what js/css libs are needed. Just a convention, you can use arbitrary medata freely.
-
+* `Tags: ruby rails sinatra` - A convention for tagging pages and posts
+* `Flags: visible` - Force a file in _layout to be renderable.
 
 
 ## Standard folders

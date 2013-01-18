@@ -7,7 +7,7 @@ This tutorial is not yet finished; it is not functional.
 ### Prerequisites
 
 1. A git repository to store your new website
-2. Ruby 1.9+
+2. Ruby 1.9.2 or higher
 3. A good text editor with ruby, yaml, and slim syntax highlighting. Sublime Text 2 is my personal choice; but [you have to install slim highlighting through package control](https://github.com/fredwu/ruby-slim-tmbundle).
 4. RVM set up for the repo or a parent folder (optional, but suggested if you like isolating gem groups)
 

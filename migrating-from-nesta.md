@@ -42,8 +42,21 @@ In site.rb, add 'require' and 'register' calls
 
 4. Replace references to Nesta::Config with Hardwired::Config.config
 
+## 6. Make metadata YAML compliant.
 
-## 4. (optional) Migrate to slim
+1. Make sure there's a space after every colon.
+
+## 5. Remove usage of Template:, replace with nested Layout: metadata
+
+Hardwired supports nested layouts, discarding Nesta's 'template:' metadata. Use `Layout: ` insteaad of `Template:` and in the layout, add `Layout: ` as well to specify the root layout. 
+
+Also, nested layout support means all files are equal. The content page selects its parent layout, which in turn selects its own parent. 
+
+This means your layouts need to always use `yield`, never `@page.to_html(self)` 
+
+You'll also need to pass in a scope argument for `page.body(self)` and `page.summary(self)`, so they can render in the correct context.
+
+## 5. (optional) Migrate to slim
 
 Slim is far superior to HAML in nearly every way. If you want some iffy help converting, use this gem: 
 

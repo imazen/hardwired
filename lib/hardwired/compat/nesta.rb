@@ -3,7 +3,7 @@ require 'sinatra/extension'
 
 #NestaCMS compatibility shims
 
-#For Nesta .mdown compatibility - Still need to rename *.erbis -> *.erb
+#For Nesta .mdown compatibility - Still need to rename *.erubis -> *.erb
 Tilt.register 'mdown', Tilt[:md] 
 
 module Nesta

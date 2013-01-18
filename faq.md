@@ -136,7 +136,7 @@ Monkey-patching is easy; drop this at the top of site.rb (or create another .rb 
         # Use this feature to do this without polluting your directory structure
         google_verify: [344a8f78fa8143f6, b4f699bd08907a51]
 
-2. Add a new route to Site.rb 
+2. Add a new route to Site.rb (not required if you're using Bootstrap)
       
         class Site < Hardwired::Bootstrap
           get %r{/google([0-9a-z]+).html?} do |code|
