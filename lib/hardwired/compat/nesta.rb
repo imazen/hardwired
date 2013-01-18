@@ -27,7 +27,7 @@ module Hardwired
     end
 
     def date(format = nil)
-      format == :xmlschema && super ? super.xmlschema : super
+      format == :xmlschema && super ? super().xmlschema : super()
     end
 
      def keywords
