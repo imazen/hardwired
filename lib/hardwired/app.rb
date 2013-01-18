@@ -1,9 +1,8 @@
+Encoding.default_external = 'utf-8' if RUBY_VERSION =~ /^1.9/
 
 #If certain folders are KNOWN to contain only static files, we can speed those up
 #use Rack::Static, :urls => ["/public"]
 #use Rack::Static, :urls => ["/attachments"], :root "content"
-
-
 
 #Register parsers for file types that support automatic header parsing
 Hardwired::ContentFormats.register Hardwired::ContentFormats::Markdown, :mdown, :md, :markdown
@@ -12,15 +11,26 @@ Hardwired::ContentFormats.register Hardwired::ContentFormats::Textile, :textile
 Hardwired::ContentFormats.register Hardwired::ContentFormats::Html, :htmf
 Hardwired::ContentFormats.register Hardwired::ContentFormats::Slim, :slim
 
-
-
-Encoding.default_external = 'utf-8' if RUBY_VERSION =~ /^1.9/
 module Hardwired 
 	class SiteBase < Sinatra::Base
 
-	
+		attr_accessor :select_menu, :page, :template_stack
 
-		attr_accessor :select_menu, :page
+		helpers do
+			def config
+	      Hardwired::Config.config
+	    end
+		  def index
+		  	Hardwired::Index
+		  end 
+		  def template
+		  	template_stack.last
+		  end
+
+		  def dev?
+		  	Sinatra::Base.development?
+		  end 
+		end 
 
 
 		#Enable content_for in templates
@@ -36,6 +46,9 @@ module Hardwired
 			def config_file(path)
 	      Hardwired::Config.load(path, self)
 	    end 
+	   	def dev?
+		  	Sinatra::Base.development?
+		  end 
 		end 
 
 
@@ -45,40 +58,32 @@ module Hardwired
         File.join(request.base_url, page.is_a?(Template) ? page.path : page)
       end
 
-
-	    def config
-	      Hardwired::Config.config
-	    end
-
+      #So sinatra render methods can pick up files in /content/ and /content/_layout (although we despise them)
 	    def find_template(views, name, engine, &block)
 		  	#normal
 		    super(views, name, engine, &block)
 		    #_layout folder
-		    super(Hardwired::Paths.layout_path, name.to_s, engine, &block)
+		    super(Paths.layout_path, name.to_s, engine, &block)
 		  end
+
+		  def partial(path, options={})
+		  	raise "No name provided to partial(name). Name should exclude extension." if !path
+		  	part = Index.find(path, template && template.dir_path)
+	  		raise "Failed to located partial '#{path}'" if part.nil?
+	  		output = part.render(config,{:layout => false}.merge(options), self )
+		  end 
 
 		  def before_render_file(file)
 		  	self.page = file
 		  end
 
-		  def dev?
-		  	Sinatra::Base.development?
-		  end 
-
-		  def index
-		  	Hardwired::Index
-		  end 
-
 		  def render_file(path, options={})
-	  		file = Hardwired::Index[path]
+	  		file = Index[path] || (options[:anywhere] == true && Index.find(path))
 	  		return nil if file.nil? || !file.can_render?
 				before_render_file(file)
 	  		file.render(config,options,self)
 		  end
 
-		  def auto_render(path, options=nil)
-		  	#TODO - look for 'path' inside current directory, _layout, and root. Default to no layout
-		  end 
 		end
 
 		set :root, Proc.new {Hardwired::Paths.root_path }
@@ -88,7 +93,7 @@ module Hardwired
 		
 		before do
 			#Protect against ../ attacks and _layout access
-			if request.path =~ /\.\.[\/\\]/ or request.path_info =~ /^\/_layout/mi
+			if request.path =~ /\.\.[\/\\]/ || (!dev? && request.path_info =~ /^\/_layout/mi)
 	      not_found
 	    end
 	    #Redirect incoming urls so they don't have a trailing '/'
@@ -120,17 +125,20 @@ module Hardwired
 	  	pass
 	  end
 
-
-
 	  #All interpreted files are in the index, even scss and coffeescript
 	  get '*' do
 	  	output = render_file(request.path_info)
 	  	pass if output.nil?
 	  	output 
 	  end 
+
   end
 
   class Bootstrap < SiteBase
+
+  	get %r{/google([0-9a-z]+).html?} do |code|
+      "google-site-verification: google#{code}.html" if config.google_verify.include?(code)
+    end
 
     get '/robots.txt' do
       content_type 'text/plain', :charset => 'utf-8'
@@ -142,14 +150,12 @@ module Hardwired
 
 
 	  not_found do
-	    render_file('404')
+	    render_file('404', :anywhere =>true)
 	  end
 
 	  error do
-	    render_file('500')
-	  end unless development?
-
-
+	    render_file('500', :anywhere => true)
+	  end unless dev?
 
 	end
 end

@@ -24,48 +24,7 @@ module Hardwired
 
 
 
-  
-    def title
-      if meta.title
-        meta.title
-      #elsif !parent.nil? && !parent.heading.nil?
-      #  "#{heading} - #{parent.heading}"
-      elsif heading
-        "#{heading} - #{Hardwired::Config.config.title}"
-      elsif abspath == '/'
-        Hardwired::Config.config.title
-      end
-    end
 
-    def date(format = nil)
-      @date ||= if meta.date
-        if format == :xmlschema
-          Time.parse(meta.data).xmlschema
-        else
-          DateTime.parse(meta.date)
-        end
-      end
-    end
-
-    def atom_id
-      meta.atom_id || "tag:#{Hardwired::Config.config.atom_id || Hardwired::Config.config.url  || request.host},#{date ? date.strftime('%Y-%m-%d') : ""}:#{path}"
-    end
-
-    def read_more
-      meta.read_more || 'Continue reading'
-    end
-
-    def summary (scope = nil, min_characters = 200)
-      meta.summary ? meta.summary.gsub('\n', "\n") : first_sentences(scope,min_characters)
-    end
-
-    def inline_summary
-      meta.summary
-    end
-
-    def other_pages_with_shared_tags
-       Hardwired::Index.pages.select { |p| not (p.tags & self.tags).empty? }
-    end
  
   end
 end 
