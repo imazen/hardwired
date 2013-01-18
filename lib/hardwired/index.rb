@@ -23,6 +23,7 @@ module Hardwired
     end
 
     def self.load_physical(fname)
+      fname = fname.to_s
       return if !File.file?(fname) #To skip dirs
 
       url = virtual_path_for(fname)
@@ -49,7 +50,7 @@ module Hardwired
 
     def self.[](path)
       load_all
-      return @@cache['/' + path.sub(/^\/+/,"")]
+      return @@cache['/' + path.to_s.sub(/^\/+/,"")]
     end
 
     def self.files(&block)
@@ -88,14 +89,15 @@ module Hardwired
     end
 
     def self.pages_tagged(tag)
-      pages.select { |p| p.tags.include?(tag)}
+      pages.select { |p| p.tag?(tag)}
    end
 
     def self.posts_tagged(tag)
-      posts.select { |p| p.tags.include?(tag)}
+      posts.select { |p| p.tag?(tag)}
    end
  
     def self.virtual_path_for(fname)
+      fname = fname.to_s
       #Strip base path and last extension
       url = fname[Hardwired::Paths.content_path.length..-1]
       ext = File.extname(url).downcase[1..-1];
