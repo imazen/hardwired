@@ -26,6 +26,10 @@ module Hardwired
       meta.description
     end
 
+    def date(format = nil)
+      format == :xmlschema && super ? super.xmlschema : super
+    end
+
      def keywords
       meta.keywords
     end
