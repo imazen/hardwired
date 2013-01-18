@@ -56,6 +56,7 @@ module Hardwired
     #Searches for the template in multiple folders - unless shortname starts with a slash, in which case only content root is searched.
     #Order: 1. Root, 2. current_path, 3. _layout, 4. ? may be configurable later
     def self.find(shortname, current_path = nil)
+      return nil if shortname.nil? #Otherwise we return root for all nil requests due to .to_s
       s = shortname.to_s
       return self[s] if self[s]
       return nil if s[0] == '/'
