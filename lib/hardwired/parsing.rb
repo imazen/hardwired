@@ -38,6 +38,7 @@ module Tilt
   register RubyPoweredMarkdown, 'rmd'
   register MarkdownVars, 'mdv'
 
+  # Enumerate alternate engine names for the given name. Ex. alternate_engine_names(:mdown) -> :md, :markdown, :mkd, :mdown
   def self.alternate_engine_names(engine)
     Enumerator.new  do |y| 
       default = Tilt[engine]
@@ -165,8 +166,21 @@ module Hardwired
       end
       yaml.is_a?(Hash) ? yaml : nil
     end 
-
-
   end 
 
+
+  module Text
+    #Returns at least [min_chars] from the beginning of 'text' without cutting off sentences.
+    def self.get_whole_sentences(text, min_chars)
+      sentences = text.split(/(?<!(?:[DMS]r|Mrs|Sra|st))([.?!])(?=^Z|\s)/m)
+      result = ''
+      #We can't end before adding all appropriate punctuation
+      sentences.each do |part|
+        break if result.length > min_chars && part.length > 1 && !(result =~ /\A\s*\Z/)
+        result << part
+      end 
+
+      result
+    end
+  end
 end
