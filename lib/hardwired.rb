@@ -8,8 +8,9 @@ require 'hardwired/config'
 require 'hardwired/paths'
 require 'hardwired/parsing'
 require 'hardwired/index'
-require 'hardwired/template'
 require 'hardwired/page'
 require 'hardwired/helpers'
 require 'hardwired/aliases'
 require 'hardwired/app'
+
+
