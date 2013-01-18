@@ -53,6 +53,22 @@ module Hardwired
       return @@cache['/' + path.to_s.sub(/^\/+/,"")]
     end
 
+    #Searches for the template in multiple folders - unless shortname starts with a slash, in which case only content root is searched.
+    #Order: 1. Root, 2. current_path, 3. _layout, 4. ? may be configurable later
+    def self.find(shortname, current_path = nil)
+      s = shortname.to_s
+      return self[s] if self[s]
+      return nil if s[0] == '/'
+      if current_path
+        p = Paths.join(current_path,s)
+        return self[p] if self[p]
+      end
+      p = Paths.join(Paths.layout_subfolder,s)
+      return self[p] if self[p]
+      nil
+    end
+
+    #Enumerates all indexed files
     def self.files(&block)
       load_all
       Enumerator.new  do |y| 
@@ -62,6 +78,7 @@ module Hardwired
       end.each(&block)
     end
 
+    #Enumerates all indexed files, but requires a filtering block
     def self.enum_files
       load_all
       Enumerator.new  do |y| 
