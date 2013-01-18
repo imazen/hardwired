@@ -1,5 +1,6 @@
 module Hardwired
   class Index
+
     @@cache = {}
     @@loaded = false
 
@@ -10,27 +11,28 @@ module Hardwired
    
     def self.load_all
       return if @@loaded
-      ## All files with Tilt-registered extensions
-      file_pattern = File.join(Hardwired::Paths.content_path, "**", "*.{#{Tilt.mappings.keys.join(',')}}")
-      Dir.glob(file_pattern).map do |path|
-        #skip static files
-        next if path =~ /\.static./i
-        ext = File.extname(path)
-        next if ext.nil? || !Tilt[ext[1..-1]]
-        _ = load_physical(path)
+      ## Find all files with Tilt-registered extensions in every mounted folder
+      mounted_folders.each_pair do |k,v|
+        file_pattern = File.join(k, "**", "*.{#{Tilt.mappings.keys.join(',')}}")
+        Dir.glob(file_pattern).map do |path|
+          #skip static files
+          next if path =~ /\.static./i
+          ext = File.extname(path)
+          next if ext.nil? || !Tilt[ext[1..-1]]
+          _ = load_physical(path)
+        end
       end
       @@loaded = true ##So other threads know when we're done
     end
 
     def self.load_physical(fname)
+      
       fname = fname.to_s
-      return if !File.file?(fname) #To skip dirs
+      return if !File.file?(fname) #Skip directories
 
       url = virtual_path_for(fname)
-
-
       begin
-        
+        #Prevent conflicts
         if !@@cache[url].nil?
           other_name = @@cache[url].filename 
           raise "Conflicting files #{fname} and #{other_name} share the same url #{url}! Filenames must be unique. #{@@cache[url].inspect}" if other_name != fname
@@ -50,23 +52,37 @@ module Hardwired
 
     def self.[](path)
       load_all
-      return @@cache['/' + path.to_s.sub(/^\/+/,"")]
+      return @@cache['/' + path.to_s.sub(/\A\/+/,"")]
     end
 
     #Searches for the template in multiple folders - unless shortname starts with a slash, in which case only content root is searched.
-    #Order: 1. Root, 2. current_path, 3. _layout, 4. ? may be configurable later
+    #Order: 1. Root, 2. current_path, 3. _layout and other search_paths
     def self.find(shortname, current_path = nil)
-      return nil if shortname.nil? #Otherwise we return root for all nil requests due to .to_s
-      s = shortname.to_s
-      return self[s] if self[s]
-      return nil if s[0] == '/'
+      #Return nil if we were provided it
+      return nil if shortname.nil?
+      s = shortname.to_s #Support symbols
+      return self[s] if self[s] #1. Try as-is (root)
+      return nil if s[0] == '/' #Leading slashes mean 'absolute', not relative
+
+      #search current dir if provided
       if current_path
         p = Paths.join(current_path,s)
         return self[p] if self[p]
       end
-      p = Paths.join(Paths.layout_subfolder,s)
-      return self[p] if self[p]
+      #Search in search paths (includes _layout)
+      self.search_paths.each { |path|
+        p = Paths.join(path,s)
+        return self[p] if self[p]
+      }
       nil
+    end
+
+    def self.search_paths
+      @@search_paths ||= [Paths.layout_subfolder]
+    end
+
+    def self.add_search_path(path)
+      search_paths << path
     end
 
     #Enumerates all indexed files
@@ -108,25 +124,51 @@ module Hardwired
 
     def self.pages_tagged(tag)
       pages.select { |p| p.tag?(tag)}
-   end
+    end
 
     def self.posts_tagged(tag)
       posts.select { |p| p.tag?(tag)}
-   end
- 
-    def self.virtual_path_for(fname)
-      fname = fname.to_s
-      #Strip base path and last extension
-      url = fname[Hardwired::Paths.content_path.length..-1]
-      ext = File.extname(url).downcase[1..-1];
-      url = url[0..-(ext.length + 2)] unless ext.nil? or ext.empty?
-
-      ## Reduce /index to /
-      url = url.sub(/\/index$/im,"/")
-      # Strip leading, trailing slashes, then restore leading slash
-      '/' + url.gsub(/^\/+|\/+$/m,"")
     end
 
+    def self.mounted_folders
+      @@mounted_folders ||= {Hardwired::Paths.content_path => "/"}
+    end
+
+    def self.mount_folder(physical_path, virtual_path)
+      mounted_folders[physical_path] = virtual_path
+    end 
+
+    #Useful for getting the 'virtual' working directory for a template, for located partials or layouts
+    def self.virtual_parent_dir_for(fname)
+      self.make_almost_virtual(fname).sub(/\/[^\/]\Z/m,'')
+    end
+  
+    #Get the virtual path for any filename within a mounted folder
+    def self.virtual_path_for(fname)
+      ## Reduce "/index" to "/" if present
+      path = make_almost_virtual(fname).sub(/\/index\Z/im,"/")
+      
+      (path.length > 1 && path[-1] == ?/) ? path[0..-2] : path
+
+    end
+
+
+    def self.make_almost_virtual(fname)
+      fname = fname.to_s
+
+      mounted_folders.each_pair { |k,v|
+        if fname.start_with?(k) 
+          #Replace physical portion with 'mount folder'
+          p = v.gsub(/\/+\Z/m,'') + "/" + fname[k.length..-1].gsub(/\A\/+/m,'')
+          #Strip extension
+          ext = File.extname(p).downcase[1..-1];
+          p = p[0..-(ext.length + 2)] unless ext.nil? or ext.empty?
+          # Strip leading, trailing slashes, then restore leading slash
+          return '/' + p.gsub(/^\/+|\/+$/m,"")
+        end
+      }
+      raise "No root directory matches '#{fname}'"
+    end 
 
     
   end 
