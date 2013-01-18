@@ -105,40 +105,48 @@ module Hardwired
    
 
      
-   class Markdown
-     def self.heading (markup) markup =~ /\A#\s*(.*?)(\s*#+|$)/ ? $1 : nil
-     end
+    class Markdown
+      def self.heading (markup) markup =~ /\A#\s*(.*?)(\s*#+|$)/ ? $1 : nil
+      end
      
-     def self.body (markup) markup.sub(/\A#[^#].*$\r?\n(\r?\n)?/, '')  end
-   end
+      def self.body (markup) markup.sub(/\A#[^#].*$\r?\n(\r?\n)?/, '')  end
+    end
    
-   class Haml
-       def self.heading (markup) markup =~  /\A\s*%h1\s+(.*)/ ? $1 : nil
-       end
-       def self.body (markup) markup.sub(/\A\s*%h1\s+.*$\r?\n(\r?\n)?/, '') end
-   end
+    class Haml
+      def self.heading (markup) markup =~  /\A\s*%h1\s+(.*)/ ? $1 : nil
+      end
+      def self.body (markup) markup.sub(/\A\s*%h1\s+.*$\r?\n(\r?\n)?/, '') end
+    end
    
-   class Textile
-       def self.heading (markup) 
+    class Textile
+      def self.heading (markup) 
          markup =~  /^\s*h1\.\s+(.*)/ ? $1 : nil
       end
 
-       def self.body (markup) markup.sub(/\A\s*h1\.\s+.*$\r?\n(\r?\n)?/, '') end
-  end
+      def self.body (markup) markup.sub(/\A\s*h1\.\s+.*$\r?\n(\r?\n)?/, '') end
+    end
    
-   class Html
-       def self.heading (markup) markup =~ /\A\s*<h1[^><]*>(.*?)<\/h1>/ ? $1 : nil
-       end
+    class Html
+      def self.heading (markup) markup =~ /\A\s*<h1[^><]*>(.*?)<\/h1>/ ? $1 : nil
+      end
 
-       def self.body (markup) markup.sub(/\A\s*<h1[^><]*>.*?<\/h1>\s*/, '') end
+      def self.body (markup) markup.sub(/\A\s*<h1[^><]*>.*?<\/h1>\s*/, '') end
+     end
+
+    class Slim
+      def self.heading (markup) markup =~  /\A\s*h1\s+(.*)/ ? $1 : nil
+      end
+      def self.body (markup) markup.sub(/\A\s*h1\s+.*$\r?\n(\r?\n)?/, '') end
     end
 
-   class Slim
-       def self.heading (markup) markup =~  /\A\s*h1\s+(.*)/ ? $1 : nil
-       end
-       def self.body (markup) markup.sub(/\A\s*h1\s+.*$\r?\n(\r?\n)?/, '') end
-   end
-   
+
+    #Register parsers for file types that support automatic header parsing
+    #This doesn't register them for indexing; that's done through tilt.
+    register Markdown, :mdown, :md, :markdown
+    register Haml, :haml
+    register Textile, :textile
+    register Html, :htmf
+    register Slim, :slim
   end
 
   module MetadataParsing

@@ -4,13 +4,6 @@ Encoding.default_external = 'utf-8' if RUBY_VERSION =~ /^1.9/
 #use Rack::Static, :urls => ["/public"]
 #use Rack::Static, :urls => ["/attachments"], :root "content"
 
-#Register parsers for file types that support automatic header parsing
-Hardwired::ContentFormats.register Hardwired::ContentFormats::Markdown, :mdown, :md, :markdown
-Hardwired::ContentFormats.register Hardwired::ContentFormats::Haml, :haml
-Hardwired::ContentFormats.register Hardwired::ContentFormats::Textile, :textile
-Hardwired::ContentFormats.register Hardwired::ContentFormats::Html, :htmf
-Hardwired::ContentFormats.register Hardwired::ContentFormats::Slim, :slim
-
 module Hardwired 
 	class SiteBase < Sinatra::Base
 
