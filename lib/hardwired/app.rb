@@ -71,7 +71,7 @@ module Hardwired
 		  end
 
 		  def render_file(path, options={})
-	  		file = Index[path] || (options[:anywhere] == true && Index.find(path))
+	  		file = options[:anywhere] == true ? Index[path] : Index.find(path)
 	  		return nil if file.nil? || !file.can_render?
 				before_render_file(file)
 	  		file.render(config,options,self)
