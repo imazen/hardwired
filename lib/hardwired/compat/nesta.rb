@@ -8,15 +8,18 @@ Tilt.register 'mdown', Tilt[:md]
 
 module Nesta
   Page = Hardwired::Page
-  
+  module Path
+    def self.local(*args)
+      Hardwired::Paths.root_path(File.join(args))
+    end
+  end
 end
 
 module Hardwired
 	class Page
 
 		def metadata(name)
-			meta.call(name) if meta.respond_to? name
-			nil
+			meta[name]
 		end
 
     def description
@@ -43,6 +46,9 @@ module Hardwired
     	[]
     end
 
+    def self.find_by_path(path)
+      Hardwired::Index[path]
+    end
 
     def self.find_all
       Index.pages
@@ -86,6 +92,7 @@ module Hardwired
 				@title = file.title if file.is_page?
 				@description = file.meta.description
 				@keywords = file.meta.keywords
+        @google_analytics_code = config.google_analytics_code
 			end
 
 
@@ -118,7 +125,7 @@ module Hardwired
  
 
       def local_stylesheet_link_tag(name)
-        pattern = File.expand_path(Hardwired.Paths.content_path("/css/#{name}.s{a,c}?ss"))
+        pattern = File.expand_path(Hardwired::Paths.content_path("/css/#{name}.s{a,c}?ss"))
         if Dir.glob(pattern).size > 0
           haml_tag :link, :href => "/css/#{name}.css", :rel => "stylesheet"
         end
