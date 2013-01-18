@@ -198,6 +198,7 @@ module Hardwired
 
       #Removed inner_templates so engines don't complain
       inner_templates = options.delete(:inner_templates) || []
+      options_layout = options.delete(:layout) 
         
       debugger if scope.config.nil?
 
@@ -215,7 +216,7 @@ module Hardwired
       options[:inner_templates] = inner_templates
 
       #Render parents recursively
-      output = layout_template.render(config, options,scope,locals) {output} unless layout_template.nil? || options[:layout] == false
+      output = layout_template.render(config, options,scope,locals) {output} unless layout_template.nil? || (options_layout == false)
 
       Dir.chdir(old_dir)
       stack.pop
@@ -232,7 +233,7 @@ module Hardwired
     # /app/content/folder/index.md -> "/folder"
     #/app/content/folder.md -> ""
     def dir_path
-      self.filename[Paths.content_path.length..-1].sub(/\/[^\/]$/m,'')
+      Index.virtual_parent_dir_for(filename)
     end 
 
 
