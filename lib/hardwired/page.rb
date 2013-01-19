@@ -6,7 +6,7 @@ module Hardwired
     end
   
     def title
-      meta.title || (heading && "#{heading} - #{Hardwired::Config.config.title}") ||  (path == '/' && Config.config.title)
+      meta.title || (heading && "#{heading} - #{Config.config.title}") ||  (path == '/' && Config.config.title)
     end
 
     def date
@@ -14,7 +14,7 @@ module Hardwired
     end
 
     def atom_id
-      meta.atom_id || "tag:#{Hardwired::Config.config.atom_id || Hardwired::Config.config.url  || request.host},#{date ? date.strftime('%Y-%m-%d') : ""}:#{path}"
+      meta.atom_id || "tag:#{Config.config.atom_id || Config.config.url  || request.host},#{date ? date.strftime('%Y-%m-%d') : ""}:#{path}"
     end
 
     def read_more
@@ -30,7 +30,7 @@ module Hardwired
     end
 
     def other_pages_with_shared_tags
-       Hardwired::Index.pages.select { |p| not (p.tags & self.tags).empty? }
+       Index.pages.select { |p| not (p.tags & self.tags).empty? }
     end
 
 
@@ -113,11 +113,11 @@ module Hardwired
 
     attr_reader :filename, :path, :last_modified, :format, :line, :markup_body, :markup_heading, :markup, :meta
 
-    def initialize(physical_filename, raw_contents=nil, line = 0)
+    def initialize(physical_filename, virtual_path=nil, raw_contents=nil, line = 0)
       @filename = physical_filename
       @last_modified = File.mtime(filename)
       @format = File.extname(filename).downcase[1..-1].to_sym
-      @path = Index.virtual_path_for(filename)
+      @path = virtual_path || Index.virtual_path_for(filename)
       @line = line.to_i
       if raw_contents.nil? && !File.zero?(filename)
         File.open(@filename) { |f|
@@ -142,13 +142,12 @@ module Hardwired
       @line += @raw_contents.lines.count - @markup_body.lines.count 
     end
 
-    def self.load(filename)
+    def self.load(filename, virtual_path = nil)
       begin
-        t = Template.new(filename)
+        t = Template.new(filename, virtual_path)
         t.is_page? ? Page.new(t) : t
       rescue
-        debugger
-        raise $!, "Error loading template '#{filename}': #{$!}"
+        raise $!, "Error loading template '#{filename}'#{virtual_path ? " under virtual path '" + virtual_path  + "'" : ""}: #{$!}"
       end 
     end
 
@@ -233,7 +232,7 @@ module Hardwired
     # /app/content/folder/index.md -> "/folder"
     #/app/content/folder.md -> ""
     def dir_path
-      Index.virtual_parent_dir_for(filename)
+      Index.virtual_parent_dir_for(filename) || path.sub(/\/[^\/]+\Z/m,'')
     end 
 
 
@@ -276,20 +275,23 @@ module Hardwired
       other.respond_to?(:path) && (self.path == other.path)
     end
 
-    def copy_vars_from(other, *vars)
-      vars = [:@filename,:@last_modified,:@format,:@path,:@raw_contents,:@line,:@meta,:@markup,:@markup_body,:@markup_heading] if vars.nil? || vars.empty?
-      vars.each do |v|
-        instance_variable_set(v,other.instance_variable_get(v))
-      end
-    end
 
 
-     def parse_string_list(text)
+    def parse_string_list(text)
       return [] if text.nil?
       if text.is_a?(String) 
         text = text.split(',').map { |string| string.strip }
       end
       text
+    end
+
+
+
+    def copy_vars_from(other, *vars)
+      vars = [:@filename,:@last_modified,:@format,:@path,:@raw_contents,:@line,:@meta,:@markup,:@markup_body,:@markup_heading] if vars.nil? || vars.empty?
+      vars.each do |v|
+        instance_variable_set(v,other.instance_variable_get(v))
+      end
     end
   end
 
