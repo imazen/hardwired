@@ -25,12 +25,12 @@ module Hardwired
       @@loaded = true ##So other threads know when we're done
     end
 
-    def self.load_physical(fname)
+    def self.load_physical(fname, virtual_path = nil)
       
       fname = fname.to_s
       return if !File.file?(fname) #Skip directories
 
-      url = virtual_path_for(fname)
+      url = virtual_path ? ('/' + virtual_path.to_s.sub(/\A\/+/,"")) : virtual_path_for(fname)
       begin
         #Prevent conflicts
         if !@@cache[url].nil?
@@ -40,7 +40,7 @@ module Hardwired
 
         #We must check that this file hasn't already been cached - multiple threads call cache_all simultaneously
         if @@cache[url].nil? || File.mtime(fname) != @@cache[url].last_modified
-          @@cache[url] = Template.load(fname)
+          @@cache[url] = Template.load(fname,url)
         end
 
       rescue Errno::ENOENT
@@ -49,6 +49,22 @@ module Hardwired
 
       @@cache[url]
     end
+
+    def self.add_common_file(name, virtual_path)
+      physical_path = Paths.common_path(name)
+      if !File.file?(physical_path)
+        Dir.glob("#{physical_path}.{#{Tilt.mappings.keys.join(',')}}").map do |path|
+          ext = File.extname(path)
+          next if ext.nil? || !Tilt[ext[1..-1]]
+          physical_path = path
+          break
+        end
+      end
+
+      load_physical(physical_path, virtual_path)
+    end
+
+
 
     def self.[](path)
       load_all
@@ -138,26 +154,28 @@ module Hardwired
       @@mounted_folders ||= {Hardwired::Paths.content_path => "/"}
     end
 
-    def self.mount_folder(physical_path, virtual_path)
-      mounted_folders[physical_path] = virtual_path
-    end 
-
     #Useful for getting the 'virtual' working directory for a template, for located partials or layouts
     def self.virtual_parent_dir_for(fname)
       self.make_almost_virtual(fname).sub(/\/[^\/]+\Z/m,'')
     end
   
     #Get the virtual path for any filename within a mounted folder
-    def self.virtual_path_for(fname)
+    def self.virtual_path_for(fname, raise_if_outside=true)
       ## Reduce "/index" to "/" if present
-      path = make_almost_virtual(fname).sub(/\/index\Z/im,"/")
+      path = make_almost_virtual(fname,raise_if_outside)
+
+      return nil if path.nil?
+
+      path.sub!(/\/index\Z/im,"/")
       
       (path.length > 1 && path[-1] == ?/) ? path[0..-2] : path
-
     end
 
+    def self.is_outside?(fname)
+      make_almost_virtual(fname, false).nil?
+    end 
 
-    def self.make_almost_virtual(fname)
+    def self.make_almost_virtual(fname, raise_if_outside=true)
       fname = fname.to_s
 
       mounted_folders.each_pair { |k,v|
@@ -171,9 +189,9 @@ module Hardwired
           return '/' + p.gsub(/^\/+|\/+$/m,"")
         end
       }
-      raise "No root directory matches '#{fname}'"
+      raise "No root directory matches '#{fname}'" if raise_if_outside
+      nil
     end 
-
     
   end 
 end

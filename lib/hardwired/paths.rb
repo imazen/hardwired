@@ -2,7 +2,7 @@
 module Hardwired
  class Paths
     class << self
-      attr_accessor :root, :content_subfolder, :layout_subfolder 
+      attr_accessor :root, :content_subfolder, :layout_subfolder
 
       def layout_subfolder 
         @layout_subfolder || '_layout' 
@@ -11,7 +11,12 @@ module Hardwired
       def content_subfolder 
         @content_subfolder || 'content' 
       end
-       
+      
+      #Returns the physical path to a file in /hardwired/common/
+      def common_path(name)
+        join(::File.expand_path('../../common', ::File.dirname(__FILE__)),name)
+      end
+      
       #Returns the physical path for the given relative path joined to the root
       def root_path(basename = nil)
         join(root, basename)
