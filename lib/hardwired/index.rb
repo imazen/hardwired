@@ -155,8 +155,10 @@ module Hardwired
     end
 
     #Useful for getting the 'virtual' working directory for a template, for located partials or layouts
-    def self.virtual_parent_dir_for(fname)
-      self.make_almost_virtual(fname).sub(/\/[^\/]+\Z/m,'')
+    def self.virtual_parent_dir_for(fname, raise_if_outside=true)
+      path = make_almost_virtual(fname,raise_if_outside)
+      return nil if path.nil?
+      path.sub(/\/[^\/]+\Z/m,'')
     end
   
     #Get the virtual path for any filename within a mounted folder

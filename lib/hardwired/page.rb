@@ -232,7 +232,7 @@ module Hardwired
     # /app/content/folder/index.md -> "/folder"
     #/app/content/folder.md -> ""
     def dir_path
-      Index.virtual_parent_dir_for(filename) || path.sub(/\/[^\/]+\Z/m,'')
+      Index.virtual_parent_dir_for(filename,false) || path.sub(/\/[^\/]+\Z/m,'')
     end 
 
 
