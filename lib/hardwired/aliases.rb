@@ -1,17 +1,11 @@
 # This file implements redirection support
 
 module Hardwired
-    
   module Aliases
     extend Sinatra::Extension
 
-    # set some settings for development
-    #configure :development do
-    #  set :reload_stuff, true
-    #end
 
     # Add a before filter to perform any redirects requested by individual pages
-
     before do
 
       #return if response.status != 404
@@ -30,6 +24,12 @@ module Hardwired
       end
     end
 
+    #Add an alias externally
+    def add_alias(path, page)
+      AliasTable.add_alias(path,page)
+    end 
+    
+
     ## Todo - refactor to self.class instance instead of static?
     class AliasTable
 
@@ -45,6 +45,27 @@ module Hardwired
       def self.prefixes
         @@exact, @@prefixes = AliasTable.build_alias_tables if @@prefixes.nil?
         @@prefixes
+      end
+
+      #Add an alias to a page later, externally
+      def self.add_alias(path, page)
+        p = page
+        url = '/' + path.to_s.gsub(/\A\/+|\/+\Z/,'')
+        if page.is_a?(Symbol) || page.is_a?(String)
+          p = Index[p]
+        end
+        return if p.nil?
+
+        dest = p.meta.redirect_to || p.path
+        if url.end_with?("*")
+          url = AliasTable.normalize(url[0..-2])
+          #prevent cyclic redirects
+          self.prefixes[url] = dest unless AliasTable.normalize(dest).start_with?(url)
+        else
+          url = AliasTable.normalize(url)
+          #prevent cyclic redirects
+          self.exact[url] = dest unless url == AliasTable.normalize(dest)
+        end
       end
       
       def self.build_alias_tables
