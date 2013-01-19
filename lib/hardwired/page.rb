@@ -10,7 +10,7 @@ module Hardwired
     end
 
     def date
-      @date ||= meta.date && DateTime.parse(meta.date)
+      @date ||= meta.date ? DateTime.parse(meta.date) : nil
     end
 
     def atom_id

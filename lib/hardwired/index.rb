@@ -55,23 +55,27 @@ module Hardwired
       return @@cache['/' + path.to_s.sub(/\A\/+/,"")]
     end
 
-    #Searches for the template in multiple folders - unless shortname starts with a slash, in which case only content root is searched.
-    #Order: 1. Root, 2. current_path, 3. _layout and other search_paths
+    #Searches for the template in multiple folders 
+    #Order (if no leading slash): 1. current_path, 2. root, 3. _layout and other search_paths
+    #Order (if shortname has leading slash): 1. root
     def self.find(shortname, current_path = nil)
+
       #Return nil if we were provided it
       return nil if shortname.nil?
-      s = shortname.to_s #Support symbols
-      return self[s] if self[s] #1. Try as-is (root)
-      return nil if s[0] == '/' #Leading slashes mean 'absolute', not relative
+      #Support symbols
+      s = shortname.to_s 
 
-      #search current dir if provided
-      if current_path
-        p = Paths.join(current_path,s)
-        return self[p] if self[p]
-      end
-      #Search in search paths (includes _layout)
-      self.search_paths.each { |path|
-        p = Paths.join(path,s)
+      #If it starts with a slash, we only search in the root.
+      return self[s] if s[0] == '/' 
+
+      #Search in current_path, root, and search paths (includes _layout)
+      search_these = [current_path, nil, search_paths].flatten
+
+      #p "Looking for #{s} in #{search_these.join(', ')}"
+
+      
+      search_these.each { |path|
+        p = path ? Paths.join(path,s) : s
         return self[p] if self[p]
       }
       nil
@@ -140,7 +144,7 @@ module Hardwired
 
     #Useful for getting the 'virtual' working directory for a template, for located partials or layouts
     def self.virtual_parent_dir_for(fname)
-      self.make_almost_virtual(fname).sub(/\/[^\/]\Z/m,'')
+      self.make_almost_virtual(fname).sub(/\/[^\/]+\Z/m,'')
     end
   
     #Get the virtual path for any filename within a mounted folder
