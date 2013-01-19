@@ -35,8 +35,7 @@ module Tilt
     end
   end 
   register PlainHtmlTemplate, 'htmf'
-  register RubyPoweredMarkdown, 'rmd'
-  register MarkdownVars, 'mdv'
+
 
   # Enumerate alternate engine names for the given name. Ex. alternate_engine_names(:mdown) -> :md, :markdown, :mkd, :mdown
   def self.alternate_engine_names(engine)
