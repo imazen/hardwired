@@ -5,39 +5,7 @@ Encoding.default_external = 'utf-8' if RUBY_VERSION =~ /^1.9/
 #use Rack::Static, :urls => ["/attachments"], :root "content"
 
 module Hardwired 
-	class SiteBase < Sinatra::Base
-
-
-		set :root, Proc.new {Hardwired::Paths.root_path }
-		set :views, Proc.new { Hardwired::Paths.content_path } #To keep sinatra render methods working
-		set :haml, { :format => :html5 } #Who needs html4?
-
-		attr_accessor :select_menu, :page, :template_stack
-
-		helpers do
-			def config
-	      Hardwired::Config.config
-	    end
-		  def index
-		  	Hardwired::Index
-		  end 
-		  def template
-		  	template_stack.last
-		  end
-
-		  def dev?
-		  	Sinatra::Base.development?
-		  end 
-		end 
-
-
-
-
-		#Enable redirect support
-		register Hardwired::Aliases
-
-		#Import helper methods
-		helpers Hardwired::Helpers
+	class SiteWithoutRoutes < Sinatra::Base
 
 		class << self
 			def config_file(path)
@@ -52,11 +20,29 @@ module Hardwired
 		  def index
 		  	Hardwired::Index
 		  end 
-
 		end 
 
+		set :root, Proc.new {Hardwired::Paths.root_path }
+		set :views, Proc.new { Hardwired::Paths.content_path } #To keep sinatra render methods working
+		set :haml, { :format => :html5 } #Who needs html4?
+
+		attr_accessor :select_menu, :page, :template_stack
+
+		helpers Hardwired::Helpers
 
 		helpers do
+			def config
+	      Hardwired::Config.config
+	    end
+		  def index
+		  	Hardwired::Index
+		  end 
+		  def template
+		  	template_stack.last
+		  end
+		  def dev?
+		  	Sinatra::Base.development?
+		  end 
 
   		def url_for(page)
         File.join(request.base_url, page.is_a?(Template) ? page.path : page)
@@ -90,6 +76,15 @@ module Hardwired
 
 		end
 
+
+	end
+
+
+
+	class SiteBase < SiteWithoutRoutes
+
+		#Enable redirect support
+		register Hardwired::Aliases
 
 		
 		before do
