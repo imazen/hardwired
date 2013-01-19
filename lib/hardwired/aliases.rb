@@ -2,7 +2,7 @@
 
 module Hardwired
   module Aliases
-    extend Sinatra::Extension
+    extend SinatraExtension
 
 
     # Add a before filter to perform any redirects requested by individual pages

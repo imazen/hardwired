@@ -1,4 +1,3 @@
-require 'sinatra/extension'
 
 #Handles redirects for /page_id/, /?p=page_id, /?page_id=page_id
 #Uses WP ID: metadata values
@@ -7,7 +6,7 @@ require 'sinatra/extension'
 
 module Hardwired
   module Wordpress
-    extend Sinatra::Extension
+    extend SinatraExtension
 
     before do
 

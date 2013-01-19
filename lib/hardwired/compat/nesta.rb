@@ -1,6 +1,4 @@
 
-require 'sinatra/extension'
-
 #NestaCMS compatibility shims
 
 #For Nesta .mdown compatibility - Still need to rename *.erubis -> *.erb
@@ -78,7 +76,7 @@ end
 
 module Hardwired
   module Nesta
-    extend Sinatra::Extension
+    extend SinatraExtension
 
    	## Make Nesta::Config work
     before '*' do
