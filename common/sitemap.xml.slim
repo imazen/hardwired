@@ -1,0 +1,15 @@
+content_type: xml
+layout: false
+flags: -sitemap
+
+doctype xml
+urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  url
+    loc= config.url || request.base_url
+    changefreq daily
+    priority 1.0
+    lastmod= index.posts.first.last_modified.xmlschema
+  - index.pages.select{ |p| !p.flag?('-sitemap')}.each do |page|
+    url
+      loc= url_for(page)
+      lastmod= page.last_modified.xmlschema

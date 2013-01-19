@@ -1,0 +1,33 @@
+layout: false
+content_type: xml
+flags: -sitemap
+
+doctype xml
+feed xmlns='http://www.w3.org/2005/Atom'
+  title(type='text')= config.title
+  generator(uri='http://hardwiredcms.com') Hardwired
+  id= "tag:#{config.atom_id || config.url || request.base_url}:"
+  link(href="#{config.url || request.base_url}/rss.xml" rel='self')
+  link(href=(config.url || request.base_url) rel='alternate')
+  - if config.subtitle
+    subtitle type='text' = config.subtitle
+  - if index.posts.first
+    updated= index.posts.first.date.xmlschema
+  - if config.author
+    author
+      - if config.author.name
+        name= config.author.name
+      - if config.author.uri
+        uri= config.author.uri
+      - if config.author.email
+        email = config.author.email
+  - index.posts.each do |p|
+    entry
+      title= p.heading
+      link href=url_for(p) type='text/html' rel='alternate'
+      id= p.atom_id
+      content type='text/html' src=url_for(p)
+      summary= p.summary(self,200)
+      published= p.date.xmlschema
+      updated= p.date.xmlschema
+
