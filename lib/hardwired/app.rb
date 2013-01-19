@@ -7,6 +7,11 @@ Encoding.default_external = 'utf-8' if RUBY_VERSION =~ /^1.9/
 module Hardwired 
 	class SiteBase < Sinatra::Base
 
+
+		set :root, Proc.new {Hardwired::Paths.root_path }
+		set :views, Proc.new { Hardwired::Paths.content_path } #To keep sinatra render methods working
+		set :haml, { :format => :html5 } #Who needs html4?
+
 		attr_accessor :select_menu, :page, :template_stack
 
 		helpers do
@@ -26,8 +31,7 @@ module Hardwired
 		end 
 
 
-		#Enable content_for in templates
-		register Sinatra::ContentFor
+
 
 		#Enable redirect support
 		register Hardwired::Aliases
@@ -42,6 +46,13 @@ module Hardwired
 	   	def dev?
 		  	Sinatra::Base.development?
 		  end 
+		  def config
+	      Hardwired::Config.config
+	    end
+		  def index
+		  	Hardwired::Index
+		  end 
+
 		end 
 
 
@@ -79,9 +90,6 @@ module Hardwired
 
 		end
 
-		set :root, Proc.new {Hardwired::Paths.root_path }
-		set :views, Proc.new { Hardwired::Paths.content_path }
-		set :haml, { :format => :html5 }
 
 		
 		before do
@@ -93,6 +101,8 @@ module Hardwired
 	    if request.path_info =~ Regexp.new('./$')
 	      redirect to(request.path_info.sub(Regexp.new('/$'), '') + request.query_string)
 	    end
+
+
 	  end
 
 
