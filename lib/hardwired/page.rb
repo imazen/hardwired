@@ -247,6 +247,7 @@ module Hardwired
       if not meta.renderer.nil? 
         renderer = Regexp.new("(:|^)" + Regexp.escape(meta.renderer) + "$", :ignorecase)
         @renderer_class = Tilt.mappings.values.flatten.select{ |obj| renderer.match(obj.name) }.first
+        @renderer_class = Object.const_get("Tilt").const_get(meta.renderer) if @renderer_class.nil?
       else
         @renderer_class = Tilt[engine_name]
       end
