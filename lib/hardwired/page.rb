@@ -187,7 +187,7 @@ module Hardwired
       
       content_type    = meta.content_type || options.delete(:content_type) || renderer_class.default_mime_type || options.delete(:default_content_type)
       locals[:template] = self
-
+      
 
       scope.template_stack ||= []
       stack = scope.template_stack
@@ -204,7 +204,11 @@ module Hardwired
       #Removed inner_templates so engines don't complain
       inner_templates = options.delete(:inner_templates) || []
       options_layout = options.delete(:layout) 
-        
+      options.delete(:anywhere) #This setting shouldn't propogate any further, it's only for entry level
+      
+      #Remaining options should be accessible
+      locals[:options] = options.clone
+
       debugger if scope.config.nil?
 
       old_dir = Dir.pwd
@@ -214,6 +218,7 @@ module Hardwired
       #Render current template
       i = renderer_class.new(filename,line,options){markup_body}
       output = i.render(scope, locals, &block)
+    
 
       ##Check for infinite loop via inner_templates
       raise "Infinite loop in layout chain: #{inner_templates.map { |p| "'#{p.path}'"}.join(' -> ')} -> '#{path}'  (did you override the 'layout' method?)" if inner_templates.include?(self) 
