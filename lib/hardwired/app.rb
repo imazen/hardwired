@@ -26,7 +26,7 @@ module Hardwired
 		set :views, Proc.new { Hardwired::Paths.content_path } #To keep sinatra render methods working
 		set :haml, { :format => :html5 } #Who needs html4?
 
-		attr_accessor :select_menu, :page, :template_stack
+		attr_accessor :select_menu, :page_stack, :template_stack
 
 		helpers Hardwired::Helpers
 
@@ -36,6 +36,9 @@ module Hardwired
 	    end
 		  def index
 		  	Hardwired::Index
+		  end 
+		  def page
+		  	page_stack.last
 		  end 
 		  def template
 		  	template_stack.last
@@ -63,15 +66,11 @@ module Hardwired
 	  		output = part.render(config,{:layout => false}.merge(options), self )
 		  end 
 
-		  def before_render_file(file)
-		  	self.page = file
-		  end
 
 		  def render_file(path, options={})
 	  		file = options[:anywhere] == true ? Index[path] : Index.find(path)
 	  		return nil if file.nil? || !file.can_render?
-				before_render_file(file)
-	  		file.render(config,options,self)
+	  		file.render(config,{:page => file}.merge(options),self)
 		  end
 
 		end

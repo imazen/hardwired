@@ -21,8 +21,8 @@ module Hardwired
       meta.read_more || 'Continue reading'
     end
 
-    def summary (scope = nil, min_characters = 200)
-      meta_summary || first_sentences(scope,min_characters)
+    def summary (scope = nil, min_characters = 200, options={})
+      meta_summary || first_sentences(scope,min_characters, options)
     end
 
     def meta_summary
@@ -155,16 +155,16 @@ module Hardwired
 
 
 
-    def body(scope)
-      render(scope.settings, {:layout => false}, scope )
+    def body(scope, options={})
+      render(scope.config, {:layout => false, :page => self}.merge(options), scope )
     end
 
-    def render_plaintext(scope)
-      Nokogiri::HTML(body(scope)).text.squeeze(" \n\t")
+    def render_plaintext(scope, options={})
+      Nokogiri::HTML(body(scope, options)).text.squeeze(" \n\t")
     end
 
-    def first_sentences(scope, min_chars)
-      Text.get_whole_sentences(render_plaintext(scope),min_chars)
+    def first_sentences(scope, min_chars, options={})
+      Text.get_whole_sentences(render_plaintext(scope,options),min_chars)
     end
 
 
@@ -193,6 +193,12 @@ module Hardwired
       stack = scope.template_stack
       stack.push(self)
 
+      
+      scope.page_stack ||= []
+      page_stack = scope.page_stack
+      page = options.delete(:page)
+      page_stack.push(page) if page
+
       options[:default_encoding] ||= config.default_encoding if config.respond_to?(:default_encoding)
 
       #Removed inner_templates so engines don't complain
@@ -219,6 +225,7 @@ module Hardwired
 
       Dir.chdir(old_dir)
       stack.pop
+      page_stack.pop if page
 
       #First template rendered controls the content-type
       output.extend(ContentTyped).content_type = content_type if content_type
