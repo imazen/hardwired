@@ -105,10 +105,10 @@ module Hardwired
 
      
     class Markdown
-      def self.heading (markup) markup =~ /\A#\s*(.*?)(\s*#+|$)/ ? $1 : nil
+      def self.heading (markup) markup =~ /\A#[ \t]*([^#].*?)([ \t]*#+|$)/ ? $1 : nil
       end
      
-      def self.body (markup) markup.sub(/\A#[^#].*$\r?\n(\r?\n)?/, '')  end
+      def self.body (markup) markup.sub(/\A#[^#].*?$\r?\n(\r?\n)?/, '')  end
     end
    
     class Haml
@@ -133,9 +133,9 @@ module Hardwired
      end
 
     class Slim
-      def self.heading (markup) markup =~  /\A\s*h1\s+(.*)/ ? $1 : nil
+      def self.heading (markup) markup =~  /\A\s*h1[ \t]+(.*?)$/ ? $1 : nil
       end
-      def self.body (markup) markup.sub(/\A\s*h1\s+.*$\r?\n(\r?\n)?/, '') end
+      def self.body (markup) markup.sub(/\A\s*h1[ \t]+.*?$\r?\n(\r?\n)?/, '') end
     end
 
 
