@@ -107,6 +107,10 @@ class RecursiveOpenStruct < OpenStruct
     name
   end
 
+  def to_hash
+    @table.clone
+  end 
+
   def debug_inspect(io = STDOUT, indent_level = 0, recursion_limit = 12)
     display_recursive_open_struct(io, @table, indent_level, recursion_limit)
   end
