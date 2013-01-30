@@ -175,9 +175,7 @@ module Hardwired
 
       #Merge engine-specific options from config
       Tilt.alternate_engine_names(engine_name).each do |engine|
-        engine_options  = config.respond_to?(engine) ? config.send(engine) : {}
-        debugger if !engine_options.is_a?(Hash) or !options.is_a?(Hash)
-        options         = engine_options.merge(options)
+        options = config.send(engine).to_hash.merge(options) if config.respond_to?(engine)
       end
 
       #Establish defaults for scope, locals, content type, and default encoding
