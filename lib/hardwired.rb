@@ -2,6 +2,7 @@ require 'sinatra/base'
 require 'time'
 require 'nokogiri'
 require 'hardwired/sinatra_extension' #Enables simple extension development
+require 'hardwired/sinatra_content_for' #Enables yields
 require 'hardwired/structs'
 require 'hardwired/config'
 require 'hardwired/paths'
