@@ -273,13 +273,13 @@ module Hardwired
     end
 
     def parents
-      Enumerator.new do |y|
+      y = []
       parent = path
-        while !parent.empty? do
-          parent.sub!(/(^|\/)[^\/]+\/?$/m,"")
-          y << Index[parent] unless Index[parent].nil?
-        end
+      while !parent.empty? do
+        parent = parent.sub(/(^|\/)[^\/]+?$/,"")
+        y << Hardwired::Index[parent] unless Hardwired::Index[parent].nil?
       end
+      y
     end
 
     def ==(other)
