@@ -147,6 +147,9 @@ module Hardwired
 
 
 	  not_found do
+	  	# Don't render a full 404 page for asset requests
+	  	path, ext = split_ext
+	  	halt(404) if ["svg","woff","eot","ttf","jpg","png","gif","css","js"].include?(ext)
 	    render_file('404', :anywhere =>true)
 	  end
 
