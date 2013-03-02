@@ -275,7 +275,7 @@ module Hardwired
     def parents
       y = []
       parent = path
-      while !parent.empty? do
+      while !parent.empty? && parent != '/' do
         parent = parent.sub(/(^|\/)[^\/]+?$/,"")
         y << Hardwired::Index[parent] unless Hardwired::Index[parent].nil?
       end
