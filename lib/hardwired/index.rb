@@ -160,7 +160,7 @@ module Hardwired
 
       #Useful for getting the 'virtual' working directory for a template, for located partials or layouts
       def virtual_parent_dir_for(fname, raise_if_outside=true)
-        path = make_almost_virtual(fname,raise_if_outside)
+        path = make_almost_virtual(fname, true, raise_if_outside)
         return nil if path.nil?
         path.sub(/\/[^\/]+\Z/m,'')
       end
@@ -168,7 +168,7 @@ module Hardwired
       #Get the virtual path for any filename within a mounted folder
       def virtual_path_for(fname, raise_if_outside=true)
         ## Reduce "/index" to "/" if present
-        path = make_almost_virtual(fname,raise_if_outside)
+        path = make_almost_virtual(fname,true, raise_if_outside)
 
         return nil if path.nil?
 
@@ -178,10 +178,10 @@ module Hardwired
       end
 
       def is_outside?(fname)
-        make_almost_virtual(fname, false).nil?
+        make_almost_virtual(fname, true, false).nil?
       end 
 
-      def make_almost_virtual(fname, raise_if_outside=true)
+      def make_almost_virtual(fname, remove_extension=true, raise_if_outside=true)
         fname = fname.to_s
 
         mounted_folders.each_pair { |k,v|
@@ -189,8 +189,10 @@ module Hardwired
             #Replace physical portion with 'mount folder'
             p = v.gsub(/\/+\Z/m,'') + "/" + fname[k.length..-1].gsub(/\A\/+/m,'')
             #Strip extension
-            ext = File.extname(p).downcase[1..-1];
-            p = p[0..-(ext.length + 2)] unless ext.nil? or ext.empty?
+            if remove_extension
+              ext = File.extname(p).downcase[1..-1];
+              p = p[0..-(ext.length + 2)] unless ext.nil? or ext.empty?
+            end 
             # Strip leading, trailing slashes, then restore leading slash
             return '/' + p.gsub(/^\/+|\/+$/m,"")
           end
