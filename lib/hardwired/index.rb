@@ -39,7 +39,7 @@ module Hardwired
           #Prevent conflicts
           if !cache[url].nil?
             other_name = cache[url].filename 
-            raise "Conflicting files #{fname} and #{other_name} share the same url #{url}! Filenames must be unique. #{@@cache[url].inspect}" if other_name != fname
+            raise "Conflicting files #{fname} and #{other_name} share the same url #{url}! Filenames must be unique. #{cache[url].inspect}" if other_name != fname
           end
 
           #We must check that this file hasn't already been cached - multiple threads call cache_all simultaneously
