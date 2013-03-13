@@ -169,7 +169,7 @@ module Hardwired
       begin
         yaml = YAML.load(metadata_text)
       rescue Psych::SyntaxError
-        raise $!, "#{$!}\n\n METADATA:\"#{metadata_text}\""
+        raise $!, "#{$!}\n\n METADATA:\"#{metadata_text}\"", $!.backtrace
       end
       yaml.is_a?(Hash) ? yaml : nil
     end 

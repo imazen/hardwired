@@ -130,7 +130,7 @@ module Hardwired
       begin
         @meta, @markup, has_meta = MetadataParsing.extract(@raw_contents)
       rescue Psych::SyntaxError
-        raise $!, "Invalid metadata in #{@path} \n #{$!}"
+        raise $!, "Invalid metadata in #{@path} \n #{$!}", $!.backtrace
       end
       @meta = RecursiveOpenStruct.new(@meta)
       
@@ -142,13 +142,17 @@ module Hardwired
       @line += @raw_contents.lines.count - @markup_body.lines.count 
     end
 
+    def after_load
+    end 
+
     def self.load(filename, virtual_path = nil)
-      begin
-        t = Template.new(filename, virtual_path)
-        t.is_page? ? Page.new(t) : t
-      rescue
-        raise $!, "Error loading template '#{filename}'#{virtual_path ? " under virtual path '" + virtual_path  + "'" : ""}: #{$!}"
-      end 
+      
+      t = Template.new(filename, virtual_path)
+      t = t.is_page? ? Page.new(t) : t
+      t.after_load
+      return t
+    rescue 
+      raise $!, "Error loading template '#{filename}'#{virtual_path ? " under virtual path '" + virtual_path  + "'" : ""}: #{$!}", $!.backtrace
     end
 
 
