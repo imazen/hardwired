@@ -70,7 +70,7 @@ module Hardwired
 class RecursiveOpenStruct < OpenStruct
 
   def initialize(hash=nil, args={})
-    @recurse_over_arrays = args.fetch(:recurse_over_arrays,false)
+    @recurse_over_arrays = args.fetch(:recurse_over_arrays,true)
     @case_insensitive = true
     
     @table = CaseInsensitiveHash.new
