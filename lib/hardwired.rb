@@ -1,5 +1,6 @@
 require 'sinatra/base'
 require 'time'
+require 'yaml'
 require 'nokogiri'
 require 'hardwired/sinatra_extension' #Enables simple extension development
 require 'hardwired/sinatra_content_for' #Enables yields
