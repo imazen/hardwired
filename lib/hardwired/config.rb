@@ -32,7 +32,7 @@ module Hardwired
             $stderr.puts "loading config file '#{file}'" if app.logging?
             $stderr.puts "Running in environment mode #{app.environment}" unless app.environment == :production
             document = IO.read(file)
-            @config = RecursiveOpenStruct.new(config_for_env(default_config.merge(YAML.load(document)),app.environment) || {})
+            @config = RecursiveOpenStruct.new(config_for_env(default_config.merge(YAML.load(document) || {}),app.environment) || {})
             return @config 
           end
         
