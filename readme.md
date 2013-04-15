@@ -1,6 +1,8 @@
 # Hardwired - Flexible websites with Git and a text editor
 
-Hardwired tries to be intuitive and minimize specialized knowledge. We all hate CMSes.
+Hardwired tries to be intuitive and minimize specialized knowledge. We all hate CMSes. 
+
+Hardwired only provides file indexing and intuitive template rendering. What else do you really need?
 
 Dependencies: ruby 1.9+, sinatra 1.3.3+, sinatra-contrib, tilt, nokogiri
 
