@@ -120,26 +120,27 @@ module Hardwired
       @path = virtual_path || Index.virtual_path_for(filename)
       @line = line.to_i
       if raw_contents.nil? && !File.zero?(filename)
-        File.open(@filename) { |f|
-          @raw_contents = f.read
-        }
+        raw_contents = File.read(@filename)
       else
-        @raw_contents = ''
+        raw_contents = ''
       end
+      file_lines = raw_contents.lines.count
 
       begin
-        @meta, @markup, has_meta = MetadataParsing.extract(@raw_contents)
+        @meta, @markup, has_meta = MetadataParsing.extract(raw_contents)
       rescue Psych::SyntaxError
         raise $!, "Invalid metadata in #{@path} \n #{$!}", $!.backtrace
       end
       @meta = RecursiveOpenStruct.new(@meta)
       
-      @markup.lstrip! #remove leading whitespace so parsing works properly
+      @markup = @markup.lstrip #remove leading whitespace so parsing works properly
       @markup_heading = ContentFormats[@format].nil? ? nil : ContentFormats[@format].heading(markup)
       @markup_body = ContentFormats[@format].nil? ? markup : ContentFormats[@format].body(markup)
 
-      #Adjust line offset for metadata and heading removal
-      @line += @raw_contents.lines.count - @markup_body.lines.count 
+      #Adjust line offset for metadata and heading removal (and lstrop above)
+
+      @markup_body = "\n" * (file_lines - @markup_body.lines.count + line.to_i) + @markup_body
+      @markup = "\n" * (file_lines - @markup.lines.count + line.to_i) + @markup
     end
 
     def after_load
@@ -303,7 +304,7 @@ module Hardwired
 
 
     def copy_vars_from(other, *vars)
-      vars = [:@filename,:@last_modified,:@format,:@path,:@raw_contents,:@line,:@meta,:@markup,:@markup_body,:@markup_heading] if vars.nil? || vars.empty?
+      vars = [:@filename,:@last_modified,:@format,:@path,:@line,:@meta,:@markup,:@markup_body,:@markup_heading] if vars.nil? || vars.empty?
       vars.each do |v|
         instance_variable_set(v,other.instance_variable_get(v))
       end
