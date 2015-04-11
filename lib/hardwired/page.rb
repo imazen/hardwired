@@ -114,9 +114,10 @@ module Hardwired
     attr_reader :filename, :path, :last_modified, :format, :line, :markup_body, :markup_heading, :markup, :meta
 
     def initialize(physical_filename, virtual_path=nil, raw_contents=nil, line = 0)
+      raise "Either a filename or raw_content is required" if physical_filename.nil? && raw_contents.nil? 
       @filename = physical_filename
-      @last_modified = File.mtime(filename)
-      @format = File.extname(filename).downcase[1..-1].to_sym
+      @last_modified = File.mtime(filename) if filename
+      @format = File.extname(filename || virtual_path).downcase[1..-1].to_sym
       @path = virtual_path || Index.virtual_path_for(filename)
       @line = line.to_i
       if raw_contents.nil? && !File.zero?(filename)
@@ -142,6 +143,10 @@ module Hardwired
       @markup_body = "\n" * (file_lines - @markup_body.lines.count + line.to_i) + @markup_body
       @markup = "\n" * (file_lines - @markup.lines.count + line.to_i) + @markup
     end
+
+    def serialize_with_yaml
+      YAML.dump(@meta) + "---\n\n" + @markup
+    end 
 
     def after_load
     end 

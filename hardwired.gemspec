@@ -29,6 +29,7 @@ EOF
 
 
   s.add_dependency('tilt')
+  s.add_dependency('erubis')
   s.add_dependency('nokogiri')
   s.add_dependency('sinatra', '>= 1.3.3')
 
