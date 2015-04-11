@@ -116,14 +116,12 @@ module Hardwired
     def initialize(physical_filename, virtual_path=nil, raw_contents=nil, line = 0)
       raise "Either a filename or raw_content is required" if physical_filename.nil? && raw_contents.nil? 
       @filename = physical_filename
-      @last_modified = File.mtime(filename) if filename
+      @last_modified = File.mtime(filename) unless physical_filename.nil?
       @format = File.extname(filename || virtual_path).downcase[1..-1].to_sym
       @path = virtual_path || Index.virtual_path_for(filename)
       @line = line.to_i
-      if raw_contents.nil? && !File.zero?(filename)
-        raw_contents = File.read(@filename)
-      else
-        raw_contents = ''
+      if raw_contents.nil? 
+        raw_contents = !File.zero?(filename) ? File.read(@filename) : ''
       end
       file_lines = raw_contents.lines.count
 
@@ -145,7 +143,7 @@ module Hardwired
     end
 
     def serialize_with_yaml
-      YAML.dump(@meta) + "---\n\n" + @markup
+      YAML.dump(@meta.to_hash) + "---\n\n" + @markup
     end 
 
     def after_load
