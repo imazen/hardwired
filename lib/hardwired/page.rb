@@ -143,7 +143,7 @@ module Hardwired
     end
 
     def serialize_with_yaml
-      YAML.dump(@meta.to_hash) + "---\n\n" + @markup
+      YAML.dump(Hash[@meta.to_hash.to_a]) + "---\n\n" + @markup.strip
     end 
 
     def after_load
