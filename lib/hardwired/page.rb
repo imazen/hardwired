@@ -216,6 +216,7 @@ module Hardwired
       options_layout = options.delete(:layout) 
       options.delete(:anywhere) #This setting shouldn't propogate any further, it's only for entry level
       
+      options.delete(:locals)
       #Remaining options should be accessible
       locals[:options] = options.clone
 
