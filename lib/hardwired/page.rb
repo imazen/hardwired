@@ -75,6 +75,10 @@ module Hardwired
       flags.include?(flag) || flags.include?(flag.to_s)
     end 
 
+    def add_flag(flag)
+      meta.flags = parse_string_list(meta.flags).concat([flag]) unless flag?(flag)
+    end
+
     def libs
       parse_string_list(meta.libs)
     end
