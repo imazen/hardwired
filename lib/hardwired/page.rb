@@ -227,7 +227,7 @@ module Hardwired
       Dir.chdir(File.dirname(filename))
 
       #Render current template
-      i = renderer_class.new(filename,line,options){markup_body}
+      i = get_cached_renderer(filename,line,options,markup_body)
       output = i.render(scope, locals, &block)
     
 
@@ -248,7 +248,19 @@ module Hardwired
       
       output
     end
+    
+    def get_cached_renderer(filename,line,options,markup_body)
+      new_hashcode = markup_body.hash ^ options.hash 
+      if @_cached_renderer_invalidation != new_hashcode
+        renderer = renderer_class.new(filename,line,options){markup_body}
+        @_cached_renderer_invalidation = new_hashcode
+        @_cached_renderer = renderer
+      end
+      renderer || @_cached_renderer 
+    end
+    private :get_cached_renderer
 
+      
 
 
     #The virtual path of the physical parent directory
