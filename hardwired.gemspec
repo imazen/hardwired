@@ -4,7 +4,7 @@ $:.push File.expand_path("../lib", __FILE__)
 
 Gem::Specification.new do |s|
   s.name        = "hardwired"
-  s.version     = '0.3.2'
+  s.version     = '0.4'
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["Nathanael Jones"]
   s.email       = ["nathanael.jones@gmail.com"]
@@ -28,7 +28,7 @@ EOF
   s.require_paths = ["lib"]
 
 
-  s.add_dependency('tilt')
+  s.add_dependency('tilt', '>=2.0.1')
   s.add_dependency('erubis')
   s.add_dependency('nokogiri')
   s.add_dependency('sinatra', '>= 1.3.3')

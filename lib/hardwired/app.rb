@@ -107,7 +107,7 @@ module Hardwired
       base_path = Hardwired::Paths.content_path(path)
       local_path = "#{base_path}.#{ext}";
       static_path = "#{base_path}.static.#{ext}"
-      interpreted_ext = !Tilt.mappings[ext].empty?
+      interpreted_ext = !Tilt.default_mapping.registered?(ext)
       # We only serve the file if it's .static.* or if it's not an interpreted (Tilt-registered) extension
       pass if interpreted_ext && !File.file?(static_path)
       pass if !interpreted_ext && !File.file?(local_path)

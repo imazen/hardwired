@@ -268,14 +268,32 @@ module Hardwired
       return @renderer_class unless @renderer_class.nil?
       if not meta.renderer.nil? 
         renderer = Regexp.new("(:|^)" + Regexp.escape(meta.renderer) + "$", :ignorecase)
-        @renderer_class = Tilt.mappings.values.flatten.select{ |obj| renderer.match(obj.name) }.first
-        @renderer_class = Object.const_get("Tilt").const_get(meta.renderer) if @renderer_class.nil?
+
+        matching_instance = Tilt.default_mapping.template_map.values.select{|klass| renderer.match(klass.name)}.first
+        return matching_instance unless matching_instance.nil?
+
+        matching_names = Tilt.default_mapping.lazy_map.values.flatten.select{|name| renderer.match(name)}.to_a + [meta.renderer, "Tilt::#{meta.renderer}"]
+
+        matching_names.each do |name|
+          klass = constant_defined?(name)
+          return klass if klass
+        end 
       else
         @renderer_class = Tilt[engine_name]
       end
       raise "Template engine not found: #{meta.renderer || engine_name}" if @renderer_class.nil?
       @renderer_class
     end
+
+    def constant_defined?(name)
+      name.split('::').inject(Object) do |scope, n|
+        return false if scope.autoload?(n) # skip autload
+        return false unless scope.const_defined?(n)
+        scope.const_get(n)
+      end
+    end
+
+    private :constant_defined?
 
 
 
