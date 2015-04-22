@@ -9,15 +9,8 @@ module Hardwired
     before do
 
       #return if response.status != 404
-      #Don't consider querystring when performing comparison
-      this_url = AliasTable.normalize(request.path)
-      this_full_url = AliasTable.normalize(request.fullpath)
-      table = AliasTable.exact
-      prefixes = AliasTable.prefixes
+      dest = AliasTable.get_final_destination(request.path, request.fullpath)
 
-      dest ||= table[this_full_url]
-      dest ||= table[this_url]
-      dest ||= prefixes[this_full_url]
 
       if dest
         redirect dest, 301 # Always do permanent redirects
@@ -32,6 +25,19 @@ module Hardwired
 
     ## Todo - refactor to self.class instance instead of static?
     class AliasTable
+
+      def self.get_final_destination(path, fullpath)
+        #Don't consider querystring when performing comparison
+        this_url = AliasTable.normalize(path)
+        this_full_url = AliasTable.normalize(fullpath)
+        table = AliasTable.exact
+        prefixes = AliasTable.prefixes
+
+        dest ||= table[this_full_url]
+        dest ||= table[this_url]
+        dest ||= prefixes[this_full_url]
+        dest
+      end 
 
       @@exact = nil
       @@prefixes = nil
