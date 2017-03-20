@@ -71,7 +71,7 @@ First parameter is the css class to tag elements with, second paramater the CSS 
       end
     end 
 
-While I used to redirect 'www.domain.com' to 'domain.com' for cleanliness, root domains cannot be load balanced easily, as not all software supports the use of CNAME records for them. Heroku and other hosted services strongly reccomend against their use. 
+While I used to redirect 'www.domain.com' to 'domain.com' for cleanliness, root domains cannot be load balanced easily, as not all software supports the use of CNAME records for them. Heroku and other hosted services strongly recommend against their use. 
 
 If you still want to strip the 'www' instead of adding it, this should do the trick.
 

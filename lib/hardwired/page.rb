@@ -117,13 +117,13 @@ module Hardwired
 
     attr_reader :filename, :path, :last_modified, :format, :line, :markup_body, :markup_heading, :markup, :meta
 
-    def initialize(physical_filename, virtual_path=nil, raw_contents=nil, line = 0)
+    def initialize(physical_filename, virtual_path=nil, raw_contents=nil, line = nil)
       raise "Either a filename or raw_content is required" if physical_filename.nil? && raw_contents.nil? 
       @filename = physical_filename
       @last_modified = File.mtime(filename) unless physical_filename.nil?
       @format = File.extname(filename || virtual_path).downcase[1..-1].to_sym
       @path = virtual_path || Index.virtual_path_for(filename)
-      @line = line.to_i
+      @line = line.nil? ? nil : line.to_i
       if raw_contents.nil? 
         raw_contents = !File.zero?(filename) ? File.read(@filename) : ''
       end
@@ -142,8 +142,12 @@ module Hardwired
 
       #Adjust line offset for metadata and heading removal (and lstrop above)
 
-      @markup_body = "\n" * (file_lines - @markup_body.lines.count + line.to_i) + @markup_body
-      @markup = "\n" * (file_lines - @markup.lines.count + line.to_i) + @markup
+      raise "Parsing bug" unless raw_contents.end_with?(@markup_body)
+
+      before_markup_body = raw_contents[0..-(@markup_body.length + 1)]
+
+      @markup_body = before_markup_body.gsub(/[^\r\n]+/,"") + @markup_body
+      @markup = "\n" * (file_lines - @markup.lines.count) + @markup
     end
 
     def serialize_with_yaml

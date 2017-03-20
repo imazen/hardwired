@@ -6,12 +6,12 @@ module Hardwired
 
       def default_config
         @defaut_config || {
-          haml:{format: :html5},
-          production: {
+          "haml" => {format: :html5},
+          "production" => {
             sass:{style: :compressed},
             less:{compress: true},
           },
-          development:{
+          "development" => {
             sass:{style: :expanded},
             less:{compress: false},
 
@@ -32,6 +32,7 @@ module Hardwired
             $stderr.puts "loading config file '#{file}'" if app.logging?
             $stderr.puts "Running in environment mode #{app.environment}" unless app.environment == :production
             document = IO.read(file)
+            #$stderr.puts "Parsing config #{document}\n\n\n#{YAML.load(document)}"
             @config = RecursiveOpenStruct.new(config_for_env(default_config.merge(YAML.load(document) || {}),app.environment) || {})
             return @config 
           end

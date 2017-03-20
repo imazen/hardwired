@@ -88,22 +88,22 @@ class RecursiveOpenStruct < OpenStruct
   def new_ostruct_member(tablename)
 
     name = tablename.to_s.downcase.gsub(" ","_").to_sym
-    unless self.respond_to?(name)
-      class << self; self; end.class_eval do
-        define_method(name) do
-          v = @table[tablename]
-          if v.is_a?(Hash)
-            RecursiveOpenStruct.new(v)
-          elsif v.is_a?(Array) && @recurse_over_arrays
-            v.map { |a| (a.is_a? Hash) ? RecursiveOpenStruct.new(a, :recurse_over_arrays => true) : a }
-          else
-            v
-          end
+    
+    class << self; self; end.class_eval do
+      define_method(name) do
+        v = @table[tablename]
+        if v.is_a?(Hash)
+          RecursiveOpenStruct.new(v)
+        elsif v.is_a?(Array) && @recurse_over_arrays
+          v.map { |a| (a.is_a? Hash) ? RecursiveOpenStruct.new(a, :recurse_over_arrays => true) : a }
+        else
+          v
         end
-        define_method("#{name}=") { |x| modifiable[tablename] = x }
-        define_method("#{name}_as_a_hash") { @table[tablename] }
       end
+      define_method("#{name}=") { |x| modifiable[tablename] = x }
+      define_method("#{name}_as_a_hash") { @table[tablename] }
     end
+    
     name
   end
 
