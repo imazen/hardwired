@@ -35,7 +35,7 @@ module Hardwired
 
       sNode = Nokogiri::XML::Node.new('script',dom)
       sNode['defer'] = "defer" if options[:defer]
-      sNode['async'] = "true" if options[:async]
+      sNode['async'] = nil if options[:async]
       sNode['src'] = "/alljs/" + scripts.map{|s| Base64.urlsafe_encode64(s)}.join(',') + "?m=" + Time.at(avg_mod_date).to_s
 
 
