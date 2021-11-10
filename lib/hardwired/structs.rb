@@ -99,6 +99,7 @@ module Hardwired
 
   class NormalizingRecursiveOpenStruct < RecursiveOpenStruct
     def initialize(hash={})
+      hash ||={}
       normalizer = new NormalizingDeepDup(:key_transform => ->(k) { k.to_s.downcase.gsub(" ","_").to_sym})
       super(normalizer.call(hash))
     end
