@@ -32,7 +32,7 @@ EOF
   s.add_dependency('erubis')
   s.add_dependency('nokogiri')
   s.add_dependency('sinatra', '>= 1.3.3')
-
+  s.add_dependency('recursive-open-struct')
   
   # Test libraries
   s.add_development_dependency('pry-rescue')
