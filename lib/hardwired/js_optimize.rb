@@ -35,7 +35,7 @@ module Hardwired
 
       sNode = Nokogiri::XML::Node.new('script',dom)
       sNode['defer'] = "defer" if options[:defer]
-      sNode['async'] = "true" if options[:async]
+      sNode['async'] = nil if options[:async]
       sNode['src'] = "/alljs/" + scripts.map{|s| Base64.urlsafe_encode64(s)}.join(',') + "?m=" + Time.at(avg_mod_date).to_s
 
 
@@ -47,7 +47,7 @@ module Hardwired
 
     end 
 
-    def create_combined_response(application_class, scripts, no_minify: dev?)
+    def self.create_combined_response(application_class, scripts, no_minify: dev?)
       scripts = scripts.split(',').map{|s| Base64.urlsafe_decode64(s)}
 
       compressor = defined?(YUI) && defined?(YUI::JavaScriptCompressor) && YUI::JavaScriptCompressor.new(:munge => false)

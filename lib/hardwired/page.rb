@@ -75,6 +75,10 @@ module Hardwired
       flags.include?(flag) || flags.include?(flag.to_s)
     end 
 
+    def add_flag(flag)
+      meta.flags = parse_string_list(meta.flags).concat([flag]) unless flag?(flag)
+    end
+
     def libs
       parse_string_list(meta.libs)
     end
@@ -113,16 +117,15 @@ module Hardwired
 
     attr_reader :filename, :path, :last_modified, :format, :line, :markup_body, :markup_heading, :markup, :meta
 
-    def initialize(physical_filename, virtual_path=nil, raw_contents=nil, line = 0)
+    def initialize(physical_filename, virtual_path=nil, raw_contents=nil, line = nil)
+      raise "Either a filename or raw_content is required" if physical_filename.nil? && raw_contents.nil? 
       @filename = physical_filename
-      @last_modified = File.mtime(filename)
-      @format = File.extname(filename).downcase[1..-1].to_sym
+      @last_modified = File.mtime(filename) unless physical_filename.nil?
+      @format = File.extname(filename || virtual_path).downcase[1..-1].to_sym
       @path = virtual_path || Index.virtual_path_for(filename)
-      @line = line.to_i
-      if raw_contents.nil? && !File.zero?(filename)
-        raw_contents = File.read(@filename)
-      else
-        raw_contents = ''
+      @line = line.nil? ? nil : line.to_i
+      if raw_contents.nil? 
+        raw_contents = !File.zero?(filename) ? File.read(@filename) : ''
       end
       file_lines = raw_contents.lines.count
 
@@ -131,7 +134,7 @@ module Hardwired
       rescue Psych::SyntaxError
         raise $!, "Invalid metadata in #{@path} \n #{$!}", $!.backtrace
       end
-      @meta = RecursiveOpenStruct.new(@meta)
+      @meta = NormalizingRecursiveOpenStruct.new(@meta)
       
       @markup = @markup.lstrip #remove leading whitespace so parsing works properly
       @markup_heading = ContentFormats[@format].nil? ? nil : ContentFormats[@format].heading(markup)
@@ -139,9 +142,17 @@ module Hardwired
 
       #Adjust line offset for metadata and heading removal (and lstrop above)
 
-      @markup_body = "\n" * (file_lines - @markup_body.lines.count + line.to_i) + @markup_body
-      @markup = "\n" * (file_lines - @markup.lines.count + line.to_i) + @markup
+      raise "Parsing bug" unless raw_contents.end_with?(@markup_body)
+
+      before_markup_body = raw_contents[0..-(@markup_body.length + 1)]
+
+      @markup_body = before_markup_body.gsub(/[^\r\n]+/,"") + @markup_body
+      @markup = "\n" * (file_lines - @markup.lines.count) + @markup
     end
+
+    def serialize_with_yaml
+      YAML.dump(Hash[@meta.to_hash.to_a]) + "---\n\n" + @markup.strip
+    end 
 
     def after_load
     end 
@@ -209,6 +220,7 @@ module Hardwired
       options_layout = options.delete(:layout) 
       options.delete(:anywhere) #This setting shouldn't propogate any further, it's only for entry level
       
+      options.delete(:locals)
       #Remaining options should be accessible
       locals[:options] = options.clone
 
@@ -219,7 +231,7 @@ module Hardwired
       Dir.chdir(File.dirname(filename))
 
       #Render current template
-      i = renderer_class.new(filename,line,options){markup_body}
+      i = get_cached_renderer(filename,line,options,markup_body)
       output = i.render(scope, locals, &block)
     
 
@@ -240,7 +252,19 @@ module Hardwired
       
       output
     end
+    
+    def get_cached_renderer(filename,line,options,markup_body)
+      new_hashcode = markup_body.hash ^ options.hash 
+      if @_cached_renderer_invalidation != new_hashcode
+        renderer = renderer_class.new(filename,line,options){markup_body}
+        @_cached_renderer_invalidation = new_hashcode
+        @_cached_renderer = renderer
+      end
+      renderer || @_cached_renderer 
+    end
+    private :get_cached_renderer
 
+      
 
 
     #The virtual path of the physical parent directory
@@ -261,14 +285,32 @@ module Hardwired
       return @renderer_class unless @renderer_class.nil?
       if not meta.renderer.nil? 
         renderer = Regexp.new("(:|^)" + Regexp.escape(meta.renderer) + "$", :ignorecase)
-        @renderer_class = Tilt.mappings.values.flatten.select{ |obj| renderer.match(obj.name) }.first
-        @renderer_class = Object.const_get("Tilt").const_get(meta.renderer) if @renderer_class.nil?
+
+        matching_instance = Tilt.default_mapping.template_map.values.select{|klass| renderer.match(klass.name)}.first
+        return matching_instance unless matching_instance.nil?
+
+        matching_names = Tilt.default_mapping.lazy_map.values.flatten.select{|name| renderer.match(name)}.to_a + [meta.renderer, "Tilt::#{meta.renderer}"]
+
+        matching_names.each do |name|
+          klass = constant_defined?(name)
+          return klass if klass
+        end 
       else
         @renderer_class = Tilt[engine_name]
       end
       raise "Template engine not found: #{meta.renderer || engine_name}" if @renderer_class.nil?
       @renderer_class
     end
+
+    def constant_defined?(name)
+      name.split('::').inject(Object) do |scope, n|
+        return false if scope.autoload?(n) # skip autload
+        return false unless scope.const_defined?(n)
+        scope.const_get(n)
+      end
+    end
+
+    private :constant_defined?
 
 
 

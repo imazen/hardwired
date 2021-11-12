@@ -15,9 +15,11 @@ module Hardwired
 
       def load_all
         return if loaded
+
+        extensions = Tilt.default_mapping.lazy_map.keys + Tilt.default_mapping.template_map.keys
         ## Find all files with Tilt-registered extensions in every mounted folder
         mounted_folders.each_pair do |k,v|
-          file_pattern = File.join(k, "**", "*.{#{Tilt.mappings.keys.join(',')}}")
+          file_pattern = File.join(k, "**", "*.{#{extensions.join(',')}}")
           Dir.glob(file_pattern).map do |path|
             #skip static files
             next if path =~ /\.static./i
@@ -200,6 +202,8 @@ module Hardwired
         raise "No root directory matches '#{fname}'" if raise_if_outside
         nil
       end 
+
+
     end
   end 
 end

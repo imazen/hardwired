@@ -26,6 +26,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 require 'ostruct'
+require 'recursive_open_struct'
+require 'set'
 
 module Hardwired
 
@@ -60,93 +62,52 @@ module Hardwired
 
   end 
 
-  class CaseInsensitiveHash < Hash
-    def [](key) super(key.to_s.downcase.to_sym) end
-    def []=(name, value) super(name.to_s.downcase.to_sym,value) end
-  end
-
-
-
-class RecursiveOpenStruct < OpenStruct
-
-  def initialize(hash=nil, args={})
-    @recurse_over_arrays = args.fetch(:recurse_over_arrays,true)
-    @case_insensitive = true
-    
-    @table = CaseInsensitiveHash.new
-    if hash
-      hash.each_pair do |k, v|
-        k = k.to_sym
-        @table[k] = v
-        new_ostruct_member(k)
-      end
+  class NormalizingDeepDup
+    def initialize(key_transform:, recurse_over_arrays: true)
+      @key_transform = key_transform
+      @recurse_over_arrays = recurse_over_arrays
     end
-  end
   
-  def [](key) @table[key] end
-
-  def new_ostruct_member(tablename)
-
-    name = tablename.to_s.downcase.gsub(" ","_").to_sym
-    unless self.respond_to?(name)
-      class << self; self; end.class_eval do
-        define_method(name) do
-          v = @table[tablename]
-          if v.is_a?(Hash)
-            RecursiveOpenStruct.new(v)
-          elsif v.is_a?(Array) && @recurse_over_arrays
-            v.map { |a| (a.is_a? Hash) ? RecursiveOpenStruct.new(a, :recurse_over_arrays => true) : a }
-          else
-            v
-          end
+    def call(obj)
+      deep_dup(obj)
+    end
+  
+    private
+  
+    def deep_dup(obj, visited=Set.new)
+      if obj.is_a?(Hash)
+        obj.each_with_object({}) do |(key, value), h|
+          h[@key_transform.call(key)] = value_or_deep_dup(value, visited)
         end
-        define_method("#{name}=") { |x| modifiable[tablename] = x }
-        define_method("#{name}_as_a_hash") { @table[tablename] }
+      elsif obj.is_a?(Array) && @recurse_over_arrays
+        obj.each_with_object([]) do |value, arr|
+          value = value.is_a?(RecursiveOpenStruct) ? value.to_h : value
+          arr << value_or_deep_dup(value, visited)
+        end
+      else
+        obj
       end
     end
-    name
-  end
-
-  def to_hash
-    @table.clone
-  end 
-
-  def debug_inspect(io = STDOUT, indent_level = 0, recursion_limit = 12)
-    display_recursive_open_struct(io, @table, indent_level, recursion_limit)
-  end
-
-  def display_recursive_open_struct(io, ostrct_or_hash, indent_level, recursion_limit)
-
-    if recursion_limit <= 0 then
-      # protection against recursive structure (like in the tests)
-      io.puts '  '*indent_level + '(recursion limit reached)'
-    else
-      #puts ostrct_or_hash.inspect
-      if ostrct_or_hash.is_a?(RecursiveOpenStruct) then
-        ostrct_or_hash = ostrct_or_hash.marshal_dump
-      end
-
-      # We'll display the key values like this :    key =  value
-      # to align display, we look for the maximum key length of the data that will be displayed
-      # (everything except hashes)
-      data_indent = ostrct_or_hash \
-        .reject { |k, v| v.is_a?(RecursiveOpenStruct) || v.is_a?(Hash) } \
-          .max {|a,b| a[0].to_s.length <=> b[0].to_s.length}[0].to_s.length
-      # puts "max length = #{data_indent}"
-
-      ostrct_or_hash.each do |key, value|
-        if (value.is_a?(RecursiveOpenStruct) || value.is_a?(Hash)) then
-          io.puts '  '*indent_level + key.to_s + '.'
-          display_recursive_open_struct(io, value, indent_level + 1, recursion_limit - 1)
-        else
-          io.puts '  '*indent_level + key.to_s + ' '*(data_indent - key.to_s.length) + ' = ' + value.inspect
-        end
-      end
+  
+    def value_or_deep_dup(value, visited)
+      obj_id = value.object_id
+      visited.include?(obj_id) ? value : deep_dup(value, visited << obj_id)
     end
-
-    true
   end
 
-end
+  class NormalizingRecursiveOpenStruct < RecursiveOpenStruct
+    def initialize(hash={}, options={})
+      hash ||= {}
 
+      transform = ->(k) { k.to_s.downcase.gsub(" ","_").to_sym}
+      
+      normalizer = NormalizingDeepDup.new(key_transform: transform)
+      super(normalizer.call(hash),     {
+        mutate_input_hash: false,
+        recurse_over_arrays: true,
+        preserve_original_keys: false
+      })
+    
+    end
+  end
 end

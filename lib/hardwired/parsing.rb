@@ -39,12 +39,9 @@ module Tilt
 
   # Enumerate alternate engine names for the given name. Ex. alternate_engine_names(:mdown) -> :md, :markdown, :mkd, :mdown
   def self.alternate_engine_names(engine)
-    Enumerator.new  do |y| 
-      default = Tilt[engine]
-      Tilt.mappings.each do |k,v| 
-        y << k if v.include?(default) 
-      end
-    end
+    Tilt.default_mapping.templates_for("file.#{engine}").to_a.map do |klass|
+      Tilt.default_mapping.extensions_for(klass).to_a
+    end.flatten.compact.uniq
   end
 end
 
