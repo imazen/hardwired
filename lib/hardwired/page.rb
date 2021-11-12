@@ -134,7 +134,7 @@ module Hardwired
       rescue Psych::SyntaxError
         raise $!, "Invalid metadata in #{@path} \n #{$!}", $!.backtrace
       end
-      @meta = RecursiveOpenStruct.new(@meta)
+      @meta = NormalizingRecursiveOpenStruct.new(@meta)
       
       @markup = @markup.lstrip #remove leading whitespace so parsing works properly
       @markup_heading = ContentFormats[@format].nil? ? nil : ContentFormats[@format].heading(markup)

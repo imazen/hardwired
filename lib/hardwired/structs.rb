@@ -63,9 +63,9 @@ module Hardwired
   end 
 
   class NormalizingDeepDup
-    def initialize(opts={})
-      @key_transform = opts.fetch(:key_transform, -> (x) {x})
-      @recurse_over_arrays = opts.fetch(:recurse_over_arrays, true)
+    def initialize(key_transform:, recurse_over_arrays: true)
+      @key_transform = key_transform
+      @recurse_over_arrays = recurse_over_arrays
     end
   
     def call(obj)
@@ -77,18 +77,16 @@ module Hardwired
     def deep_dup(obj, visited=Set.new)
       if obj.is_a?(Hash)
         obj.each_with_object({}) do |(key, value), h|
-          h[key_transform.call(key)] = value_or_deep_dup(value, visited)
+          h[@key_transform.call(key)] = value_or_deep_dup(value, visited)
         end
       elsif obj.is_a?(Array) && @recurse_over_arrays
         obj.each_with_object([]) do |value, arr|
-          value = (value.is_a?(RecursiveOpenStruct) || value.is_a?(NormalizingRecursiveOpenStruct)) ? value.to_h : value
+          value = value.is_a?(RecursiveOpenStruct) ? value.to_h : value
           arr << value_or_deep_dup(value, visited)
         end
       else
         obj
       end
-      define_method("#{name}=") { |x| modifiable[tablename] = x }
-      define_method("#{name}_as_a_hash") { @table[tablename] }
     end
   
     def value_or_deep_dup(value, visited)
@@ -98,10 +96,18 @@ module Hardwired
   end
 
   class NormalizingRecursiveOpenStruct < RecursiveOpenStruct
-    def initialize(hash={})
-      hash ||={}
-      normalizer = new NormalizingDeepDup(:key_transform => ->(k) { k.to_s.downcase.gsub(" ","_").to_sym})
-      super(normalizer.call(hash))
+    def initialize(hash={}, options={})
+      hash ||= {}
+
+      transform = ->(k) { k.to_s.downcase.gsub(" ","_").to_sym}
+      
+      normalizer = NormalizingDeepDup.new(key_transform: transform)
+      super(normalizer.call(hash),     {
+        mutate_input_hash: false,
+        recurse_over_arrays: true,
+        preserve_original_keys: false
+      })
+    
     end
   end
 end
