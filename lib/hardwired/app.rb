@@ -112,7 +112,7 @@ module Hardwired
       
       real_path = interpreted_ext ? static_path : local_path
 
-      send_file(real_path, request[:download] ? {:disposition => 'attachment'} : {})
+      send_file(real_path, params[:download] ? {:disposition => 'attachment'} : {})
     end
 
     # Special handling for non-static .css and .js requests so they'll match the 'direct evaluation' routes
