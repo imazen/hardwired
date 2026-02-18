@@ -58,7 +58,7 @@ module Hardwired
 
     def call(env)
       status, headers, body = @app.call(env)
-      headers = Rack::Utils::HeaderHash.new(headers)
+      headers = defined?(Rack::Headers) ? Rack::Headers.new(headers) : Rack::Utils::HeaderHash.new(headers)
 
       unless should_deflate?(env, status, headers, body)
         return [status, headers, body]
