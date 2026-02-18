@@ -1,51 +1,87 @@
 PATH
   remote: .
   specs:
-    hardwired (0.4)
-      erubis
+    hardwired (0.5.0)
+      erubi
       nokogiri
       recursive-open-struct
       sinatra (>= 1.3.3)
       tilt (>= 2.0.1)
 
 GEM
-  remote: http://rubygems.org/
+  remote: https://rubygems.org/
   specs:
+    base64 (0.3.0)
     coderay (1.1.3)
-    erubis (2.7.0)
+    erubi (1.13.1)
     interception (0.5)
-    method_source (1.0.0)
-    mini_portile2 (2.6.1)
-    minitest (5.14.4)
-    mustermann (1.1.1)
+    io-console (0.8.2)
+    logger (1.7.0)
+    method_source (1.1.0)
+    minitest (6.0.1)
+      prism (~> 1.5)
+    mustermann (3.0.4)
       ruby2_keywords (~> 0.0.1)
-    nokogiri (1.12.5)
-      mini_portile2 (~> 2.6.1)
+    nokogiri (1.19.1-aarch64-linux-gnu)
       racc (~> 1.4)
-    pry (0.14.1)
+    nokogiri (1.19.1-aarch64-linux-musl)
+      racc (~> 1.4)
+    nokogiri (1.19.1-arm-linux-gnu)
+      racc (~> 1.4)
+    nokogiri (1.19.1-arm-linux-musl)
+      racc (~> 1.4)
+    nokogiri (1.19.1-arm64-darwin)
+      racc (~> 1.4)
+    nokogiri (1.19.1-x86_64-darwin)
+      racc (~> 1.4)
+    nokogiri (1.19.1-x86_64-linux-gnu)
+      racc (~> 1.4)
+    nokogiri (1.19.1-x86_64-linux-musl)
+      racc (~> 1.4)
+    ostruct (0.6.3)
+    prism (1.9.0)
+    pry (0.16.0)
       coderay (~> 1.1)
       method_source (~> 1.0)
-    pry-rescue (1.5.2)
+      reline (>= 0.6.0)
+    pry-rescue (1.6.0)
       interception (>= 0.5)
       pry (>= 0.12.0)
-    racc (1.6.0)
-    rack (2.2.3)
-    rack-protection (2.1.0)
-      rack
-    rack-test (1.1.0)
-      rack (>= 1.0, < 3)
-    rake (13.0.6)
-    recursive-open-struct (1.1.3)
+    racc (1.8.1)
+    rack (3.2.5)
+    rack-protection (4.2.1)
+      base64 (>= 0.1.0)
+      logger (>= 1.6.0)
+      rack (>= 3.0.0, < 4)
+    rack-session (2.1.1)
+      base64 (>= 0.1.0)
+      rack (>= 3.0.0)
+    rack-test (2.2.0)
+      rack (>= 1.3)
+    rake (13.3.1)
+    recursive-open-struct (2.1.0)
+      ostruct
+    reline (0.6.3)
+      io-console (~> 0.5)
     ruby2_keywords (0.0.5)
-    sinatra (2.1.0)
-      mustermann (~> 1.0)
-      rack (~> 2.2)
-      rack-protection (= 2.1.0)
+    sinatra (4.2.1)
+      logger (>= 1.6.0)
+      mustermann (~> 3.0)
+      rack (>= 3.0.0, < 4)
+      rack-protection (= 4.2.1)
+      rack-session (>= 2.0.0, < 3)
       tilt (~> 2.0)
-    tilt (2.0.10)
+    tilt (2.7.0)
 
 PLATFORMS
-  ruby
+  aarch64-linux-gnu
+  aarch64-linux-musl
+  arm-linux-gnu
+  arm-linux-musl
+  arm64-darwin
+  x86_64-darwin
+  x86_64-linux-gnu
+  x86_64-linux-musl
 
 DEPENDENCIES
   hardwired!
@@ -55,4 +91,4 @@ DEPENDENCIES
   rake
 
 BUNDLED WITH
-   2.1.4
+   2.6.9

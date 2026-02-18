@@ -1,5 +1,3 @@
-Encoding.default_external = 'utf-8' if RUBY_VERSION =~ /^1.9/
-
 #If certain folders are KNOWN to contain only static files, we can speed those up
 #use Rack::Static, :urls => ["/public"]
 #use Rack::Static, :urls => ["/attachments"], :root "content"

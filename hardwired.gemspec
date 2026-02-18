@@ -4,7 +4,7 @@ $:.push File.expand_path("../lib", __FILE__)
 
 Gem::Specification.new do |s|
   s.name        = "hardwired"
-  s.version     = '0.4'
+  s.version     = '0.5.0'
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["Nathanael Jones"]
   s.email       = ["nathanael.jones@gmail.com"]
@@ -20,7 +20,7 @@ likely the CMS for you.
 Based on Sintra/Rack.
 EOF
 
-  s.rubyforge_project = "hardwired"
+  s.required_ruby_version = '>= 3.0'
 
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
@@ -29,7 +29,7 @@ EOF
 
 
   s.add_dependency('tilt', '>=2.0.1')
-  s.add_dependency('erubis')
+  s.add_dependency('erubi')
   s.add_dependency('nokogiri')
   s.add_dependency('sinatra', '>= 1.3.3')
   s.add_dependency('recursive-open-struct')

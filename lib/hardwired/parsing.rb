@@ -20,7 +20,7 @@ module Tilt
     end
   end
   
-  class RubyPoweredMarkdown < ErubisTemplate
+  class RubyPoweredMarkdown < ErubiTemplate
     def evaluate(scope, locals, &block)
        temp = super
        (Tilt["markdown"].new { temp }).render
@@ -164,7 +164,7 @@ module Hardwired
 
     def self.parse(metadata_text)
       begin
-        yaml = YAML.load(metadata_text)
+        yaml = YAML.safe_load(metadata_text, permitted_classes: [Symbol, Date, Time])
       rescue Psych::SyntaxError
         raise $!, "#{$!}\n\n METADATA:\"#{metadata_text}\"", $!.backtrace
       end
