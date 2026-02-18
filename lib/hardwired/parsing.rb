@@ -177,7 +177,7 @@ module Hardwired
     #Returns at least [min_chars] from the beginning of 'text' without cutting off sentences.
     def self.get_whole_sentences(text, min_chars)
       sentences = text.split(/(?<!(?:[DMS]r|Mrs|Sra|st))([.?!])(?=^Z|\s)/m)
-      result = ''
+      result = +''
       #We can't end before adding all appropriate punctuation
       sentences.each do |part|
         break if result.length > min_chars && part.length > 1 && !(result =~ /\A\s*\Z/)
